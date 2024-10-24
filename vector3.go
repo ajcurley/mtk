@@ -24,7 +24,7 @@ func (v Vector3) Z() float64 {
 
 // Get the magnitude (L2-norm)
 func (v Vector3) Mag() float64 {
-	return math.Sqrt(Dot(v, v))
+	return math.Sqrt(v.Dot(v))
 }
 
 // Get the unit vector
@@ -104,16 +104,16 @@ func (v Vector3) DivScalar(s float64) Vector3 {
 	}
 }
 
-// Get the dot product u * v
-func Dot(u, v Vector3) float64 {
+// Get the dot product v * u
+func (v Vector3) Dot(u Vector3) float64 {
 	return u[0]*v[0] + u[1]*v[1] + u[2]*v[2]
 }
 
-// Get the cross product u x v
-func Cross(u, v Vector3) Vector3 {
+// Get the cross product v x
+func (v Vector3) Cross(u Vector3) Vector3 {
 	return Vector3{
-		u[1]*v[2] - u[2]*v[1],
-		u[2]*v[0] - u[0]*v[2],
-		u[0]*v[1] - u[1]*v[2],
+		v[1]*u[2] - v[2]*u[1],
+		v[2]*u[0] - v[0]*u[2],
+		v[0]*u[1] - v[1]*u[2],
 	}
 }
