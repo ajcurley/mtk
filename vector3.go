@@ -114,6 +114,6 @@ func (v Vector3) Cross(u Vector3) Vector3 {
 	return Vector3{
 		v[1]*u[2] - v[2]*u[1],
 		v[2]*u[0] - v[0]*u[2],
-		v[0]*u[1] - v[1]*u[2],
+		v[0]*u[1] - v[1]*u[0],
 	}
 }
