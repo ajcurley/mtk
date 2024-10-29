@@ -11,12 +11,12 @@ func TestOBJReaderReadFile(t *testing.T) {
 	path := "testdata/box.obj"
 
 	objReader := NewOBJReader()
-	err := objReader.ReadFile(path)
+	soup, err := objReader.ReadFile(path)
 
 	assert.Empty(t, err)
-	assert.Equal(t, 24, len(objReader.vertices))
-	assert.Equal(t, 12, len(objReader.faceOffsets))
-	assert.Equal(t, 0, len(objReader.groups))
+	assert.Equal(t, 24, soup.GetNumberOfVertices())
+	assert.Equal(t, 12, soup.GetNumberOfFaces())
+	assert.Equal(t, 0, soup.GetNumberOfPatches())
 }
 
 // Read an OBJ file from path (gzip).
@@ -24,12 +24,12 @@ func TestOBJReaderReadFileGZIP(t *testing.T) {
 	path := "testdata/box.obj.gz"
 
 	objReader := NewOBJReader()
-	err := objReader.ReadFile(path)
+	soup, err := objReader.ReadFile(path)
 
 	assert.Empty(t, err)
-	assert.Equal(t, 24, len(objReader.vertices))
-	assert.Equal(t, 12, len(objReader.faceOffsets))
-	assert.Equal(t, 0, len(objReader.groups))
+	assert.Equal(t, 24, soup.GetNumberOfVertices())
+	assert.Equal(t, 12, soup.GetNumberOfFaces())
+	assert.Equal(t, 0, soup.GetNumberOfPatches())
 }
 
 // Read an OBJ file from path with mixed elements and patches.
@@ -37,12 +37,12 @@ func TestOBJReaderReadFileGroups(t *testing.T) {
 	path := "testdata/box.groups.obj"
 
 	objReader := NewOBJReader()
-	err := objReader.ReadFile(path)
+	soup, err := objReader.ReadFile(path)
 
 	assert.Empty(t, err)
-	assert.Equal(t, 8, len(objReader.vertices))
-	assert.Equal(t, 7, len(objReader.faceOffsets))
-	assert.Equal(t, 6, len(objReader.groups))
+	assert.Equal(t, 8, soup.GetNumberOfVertices())
+	assert.Equal(t, 7, soup.GetNumberOfFaces())
+	assert.Equal(t, 6, soup.GetNumberOfPatches())
 }
 
 /*

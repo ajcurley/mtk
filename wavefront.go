@@ -25,32 +25,24 @@ var (
 )
 
 type OBJReader struct {
-	vertices    []Vector3
-	faces       []int
-	faceOffsets []int
-	faceGroups  []int
-	groups      []string
+	polygonSoup *PolygonSoup
 }
 
 func NewOBJReader() *OBJReader {
 	return &OBJReader{
-		vertices:    make([]Vector3, 0),
-		faces:       make([]int, 0),
-		faceOffsets: make([]int, 0),
-		faceGroups:  make([]int, 0),
-		groups:      make([]string, 0),
+		polygonSoup: NewPolygonSoup(),
 	}
 }
 
 // Read an OBJ file from an io.Reader interface
-func (r *OBJReader) Read(reader io.Reader) error {
+func (r *OBJReader) Read(reader io.Reader) (*PolygonSoup, error) {
 	count := 1
 	buffer := bufio.NewReader(reader)
 
 	if IsGZIP(buffer) {
 		gzipFile, err := gzip.NewReader(buffer)
 		if err != nil {
-			return err
+			return nil, err
 		}
 		defer gzipFile.Close()
 
@@ -61,7 +53,7 @@ func (r *OBJReader) Read(reader io.Reader) error {
 		data, err := buffer.ReadBytes('\n')
 
 		if errors.Is(err, io.EOF) {
-			return nil
+			break
 		}
 
 		data = bytes.TrimSpace(data)
@@ -77,18 +69,20 @@ func (r *OBJReader) Read(reader io.Reader) error {
 		}
 
 		if err != nil {
-			return fmt.Errorf("line %d: %v", count, err)
+			return nil, fmt.Errorf("line %d: %v", count, err)
 		}
 
 		count++
 	}
+
+	return r.polygonSoup, nil
 }
 
 // Read an OBJ file from path
-func (r *OBJReader) ReadFile(path string) error {
+func (r *OBJReader) ReadFile(path string) (*PolygonSoup, error) {
 	file, err := os.Open(path)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	defer file.Close()
 
@@ -130,7 +124,7 @@ func (r *OBJReader) parseVertex(data []byte) error {
 	}
 
 	vertex := Vector3(values)
-	r.vertices = append(r.vertices, vertex)
+	r.polygonSoup.InsertVertex(vertex)
 
 	return nil
 }
@@ -143,8 +137,7 @@ func (r *OBJReader) parseFace(data []byte) error {
 		return ErrInvalidFace
 	}
 
-	faceOffset := len(r.faces)
-	faceGroup := len(r.groups) - 1
+	face := make([]int, len(fields))
 
 	for i := 0; i < len(fields); i++ {
 		// Split by a forward slash and keep the first token.
@@ -159,11 +152,11 @@ func (r *OBJReader) parseFace(data []byte) error {
 			return ErrInvalidFace
 		}
 
-		r.faces = append(r.faces, value-1)
+		face[i] = value - 1
 	}
 
-	r.faceOffsets = append(r.faceOffsets, faceOffset)
-	r.faceGroups = append(r.faceGroups, faceGroup)
+	patch := r.polygonSoup.GetNumberOfPatches() - 1
+	r.polygonSoup.InsertFaceWithPatch(face, patch)
 
 	return nil
 }
@@ -171,7 +164,7 @@ func (r *OBJReader) parseFace(data []byte) error {
 // Parse a group from a line
 func (r *OBJReader) parseGroup(data []byte) {
 	group := bytes.TrimSpace(data[len(PrefixGroup):])
-	r.groups = append(r.groups, string(group))
+	r.polygonSoup.InsertPatch(string(group))
 }
 
 // Get the number of vertices
