@@ -143,6 +143,9 @@ func (r *OBJReader) parseFace(data []byte) error {
 		return ErrInvalidFace
 	}
 
+	faceOffset := len(r.faces)
+	faceGroup := len(r.groups) - 1
+
 	for i := 0; i < len(fields); i++ {
 		// Split by a forward slash and keep the first token.
 		if index := bytes.IndexByte(fields[i], byte('/')); index != -1 {
@@ -152,15 +155,15 @@ func (r *OBJReader) parseFace(data []byte) error {
 		text := string(fields[i])
 		value, err := strconv.Atoi(text)
 
-		if err != nil {
-			return err
+		if err != nil || value <= 0 {
+			return ErrInvalidFace
 		}
 
 		r.faces = append(r.faces, value-1)
 	}
 
-	r.faceOffsets = append(r.faceOffsets, len(r.faceOffsets)-len(fields))
-	r.faceGroups = append(r.faceGroups, len(r.groups)-1)
+	r.faceOffsets = append(r.faceOffsets, faceOffset)
+	r.faceGroups = append(r.faceGroups, faceGroup)
 
 	return nil
 }
