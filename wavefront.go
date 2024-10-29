@@ -167,26 +167,6 @@ func (r *OBJReader) parseGroup(data []byte) {
 	r.polygonSoup.InsertPatch(string(group))
 }
 
-// Get the number of vertices
-func (r *OBJReader) GetNumberOfVertices() int {
-	return len(r.vertices)
-}
-
-// Get a vertex at an index
-func (r *OBJReader) GetVertex(id int) Vector3 {
-	return r.vertices[id]
-}
-
-// Get the number of faces
-func (r *OBJReader) GetNumberOfFaces() int {
-	return len(r.faceOffsets)
-}
-
-// Get a face at an index
-func (r *OBJReader) GetFace(id int) []int {
-	panic("not implemented")
-}
-
 // Check if a bufio.Reader is a GZIP compressed file
 func IsGZIP(reader *bufio.Reader) bool {
 	data, err := reader.Peek(2)

@@ -10,36 +10,32 @@ type HEMesh struct {
 	halfEdges []HEHalfEdge
 }
 
+// Construct a half edge mesh from a PolygonSoup
+func NewHEMeshFromPolygonSoup(soup *PolygonSoup) (*HEMesh, error) {
+	nVertices := soup.GetNumberOfVertices()
+	nFaces := soup.GetNumberOfFaces()
+
+	mesh := HEMesh{
+		vertices:  make([]HEVertex, 0, nVertices),
+		faces:     make([]HEFace, 0, nFaces),
+		halfEdges: make([]HEHalfEdge, 0, 3*nFaces),
+	}
+
+	// TODO: implement
+
+	return &mesh, nil
+}
+
 // Construct a half edge mesh from an OBJ file
 func NewHEMeshFromOBJ(reader io.Reader) (*HEMesh, error) {
 	objReader := NewOBJReader()
-	if err := objReader.Read(reader); err != nil {
+	soup, err := objReader.Read(reader)
+
+	if err != nil {
 		return nil, err
 	}
 
-	mesh := HEMesh{
-		vertices:  make([]HEVertex, 0, objReader.GetNumberOfVertices()),
-		faces:     make([]HEFace, 0, objReader.GetNumberOfFaces()),
-		halfEdges: make([]HEHalfEdge, 0, 3*objReader.GetNumberOfFaces()),
-	}
-
-	// Index the vertices without reference to their originating half edge. These
-	// will be indexed later.
-	for vertexID := 0; vertexID < len(mesh.vertices); vertexID++ {
-		vertex := HEVertex{
-			Origin:     objReader.vertices[vertexID],
-			HalfEdgeID: -1,
-		}
-		mesh.vertices = append(mesh.vertices, vertex)
-	}
-
-	// Index the faces and their half edges. For each face, use the first half
-	// edge as the reference.
-	for faceID = 0; faceID < len(mesh.faces); faceID++ {
-		// TODO: implement
-	}
-
-	return &mesh, nil
+	return NewHEMeshFromPolygonSoup(soup)
 }
 
 type HEVertex struct {
