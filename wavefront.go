@@ -14,9 +14,9 @@ import (
 )
 
 const (
-	PrefixVertex = "v"
-	PrefixFace   = "f"
-	PrefixGroup  = "g"
+	prefixVertex = "v"
+	prefixFace   = "f"
+	prefixGroup  = "g"
 )
 
 var (
@@ -60,11 +60,11 @@ func (r *OBJReader) Read(reader io.Reader) (*PolygonSoup, error) {
 		prefix := r.parsePrefix(data)
 
 		switch string(prefix) {
-		case PrefixVertex:
+		case prefixVertex:
 			err = r.parseVertex(data)
-		case PrefixFace:
+		case prefixFace:
 			err = r.parseFace(data)
-		case PrefixGroup:
+		case prefixGroup:
 			r.parseGroup(data)
 		}
 
@@ -104,7 +104,7 @@ func (r *OBJReader) parsePrefix(data []byte) []byte {
 
 // Parse a vertex from a line
 func (r *OBJReader) parseVertex(data []byte) error {
-	fields := bytes.Fields(data[len(PrefixVertex):])
+	fields := bytes.Fields(data[len(prefixVertex):])
 
 	if len(fields) != 3 {
 		return ErrInvalidVertex
@@ -131,7 +131,7 @@ func (r *OBJReader) parseVertex(data []byte) error {
 
 // Parse a face from a line
 func (r *OBJReader) parseFace(data []byte) error {
-	fields := bytes.Fields(data[len(PrefixFace):])
+	fields := bytes.Fields(data[len(prefixFace):])
 
 	if len(fields) <= 2 {
 		return ErrInvalidFace
@@ -163,7 +163,7 @@ func (r *OBJReader) parseFace(data []byte) error {
 
 // Parse a group from a line
 func (r *OBJReader) parseGroup(data []byte) {
-	group := bytes.TrimSpace(data[len(PrefixGroup):])
+	group := bytes.TrimSpace(data[len(prefixGroup):])
 	r.polygonSoup.InsertPatch(string(group))
 }
 
