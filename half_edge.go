@@ -1,7 +1,12 @@
 package mtk
 
 import (
+	"errors"
 	"io"
+)
+
+var (
+	ErrNonManifoldMesh = errors.New("non-manifold mesh")
 )
 
 type HEMesh struct {
@@ -23,6 +28,8 @@ func NewHEMeshFromPolygonSoup(soup *PolygonSoup) (*HEMesh, error) {
 
 	// Index the vertices without reference to their originating half edge
 	// which will be indexed later during the face insertion.
+	indexHalfEdges := make(map[[2]int][]int)
+
 	for vi := 0; vi < nVertices; vi++ {
 		vertex := HEVertex{
 			Origin: soup.GetVertex(vi),
@@ -44,21 +51,51 @@ func NewHEMeshFromPolygonSoup(soup *PolygonSoup) (*HEMesh, error) {
 			halfEdge := HEHalfEdge{
 				Origin: faceVertices[hi],
 				Face:   fi,
-				Prev:   nHalfEdges + (hi-1)%nFaceVertices,
-				Next:   nHalfEdges + (hi+1)%nFaceVertices,
+				Prev:   nHalfEdges + (hi+nFaceVertices-1)%nFaceVertices,
+				Next:   nHalfEdges + (hi+nFaceVertices+1)%nFaceVertices,
 				Twin:   -1,
 			}
 
 			mesh.halfEdges = append(mesh.halfEdges, halfEdge)
+
+			// Update the originating vertex's half edge
+			vertex := mesh.vertices[halfEdge.Origin]
+			vertex.HalfEdge = nHalfEdges + hi
+			mesh.vertices[halfEdge.Origin] = vertex
+
+			// Index the half edges by the vertices defining the edge. The vertices
+			// are sorted since the face orientation does not matter when assigning
+			// twin half edges.
+			x := faceVertices[hi]
+			y := faceVertices[(hi+1)%nFaceVertices]
+			k := [2]int{min(x, y), max(x, y)}
+
+			if shared, ok := indexHalfEdges[k]; ok {
+				if len(shared) == 2 {
+					return nil, ErrNonManifoldMesh
+				}
+
+				indexHalfEdges[k] = append(shared, hi+nHalfEdges)
+			} else {
+				indexHalfEdges[k] = []int{hi + nHalfEdges}
+			}
 		}
 	}
 
-	// TODO: index half edges to get twins
+	for _, shared := range indexHalfEdges {
+		if len(shared) == 2 {
+			for i, index := range shared {
+				halfEdge := mesh.halfEdges[index]
+				halfEdge.Twin = shared[(i+1)%2]
+				mesh.halfEdges[index] = halfEdge
+			}
+		}
+	}
 
 	return &mesh, nil
 }
 
-// Construct a half edge mesh from an OBJ file
+// Construct a half edge mesh from an OBJ file reader
 func NewHEMeshFromOBJ(reader io.Reader) (*HEMesh, error) {
 	objReader := NewOBJReader()
 	soup, err := objReader.Read(reader)
@@ -68,6 +105,79 @@ func NewHEMeshFromOBJ(reader io.Reader) (*HEMesh, error) {
 	}
 
 	return NewHEMeshFromPolygonSoup(soup)
+}
+
+// Construct a half edge mesh from an OBJ file
+func NewHEMeshFromOBJFile(path string) (*HEMesh, error) {
+	objReader := NewOBJReader()
+	soup, err := objReader.ReadFile(path)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return NewHEMeshFromPolygonSoup(soup)
+}
+
+// Check if the half edge mesh is closed (no open boundaries)
+func (m *HEMesh) IsClosed() bool {
+	for _, halfEdge := range m.halfEdges {
+		if halfEdge.IsBoundary() {
+			return false
+		}
+	}
+
+	return true
+}
+
+// Check if the half edge mesh has consistently oriented faces
+func (m *HEMesh) IsConsistent() bool {
+	visited := make([]bool, m.GetNumberOfHalfEdges())
+
+	for i, halfEdge := range m.halfEdges {
+		if !visited[i] && !halfEdge.IsBoundary() {
+			twin := m.GetHalfEdge(halfEdge.Twin)
+
+			if twin.Origin == halfEdge.Origin {
+				return false
+			}
+
+			visited[i] = true
+			visited[halfEdge.Twin] = true
+		}
+	}
+
+	return true
+}
+
+// Get the number of vertices
+func (m *HEMesh) GetNumberOfVertices() int {
+	return len(m.vertices)
+}
+
+// Get the vertex by ID
+func (m *HEMesh) GetVertex(id int) HEVertex {
+	return m.vertices[id]
+}
+
+// Get the number of faces
+func (m *HEMesh) GetNumberOfFaces() int {
+	return len(m.faces)
+}
+
+// Get the face by ID
+func (m *HEMesh) GetFace(id int) HEFace {
+	return m.faces[id]
+}
+
+// Get the number of half edges
+func (m *HEMesh) GetNumberOfHalfEdges() int {
+	return len(m.halfEdges)
+}
+
+// Get the half edge by ID
+func (m *HEMesh) GetHalfEdge(id int) HEHalfEdge {
+	return m.halfEdges[id]
 }
 
 type HEVertex struct {
