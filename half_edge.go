@@ -344,6 +344,41 @@ func (m *HEMesh) GetComponents() [][]int {
 	return components
 }
 
+// Naively copy another half edge mesh into the current. This does not
+// merge any duplicate vertices or faces.
+func (m *HEMesh) Merge(other *HEMesh) {
+	offsetVertices := m.GetNumberOfVertices()
+	offsetFaces := m.GetNumberOfFaces()
+	offsetHalfEdges := m.GetNumberOfHalfEdges()
+
+	m.vertices = append(m.vertices, other.vertices...)
+	m.faces = append(m.faces, other.faces...)
+	m.halfEdges = append(m.halfEdges, other.halfEdges...)
+
+	for i, vertex := range m.vertices[offsetVertices:] {
+		vertex.HalfEdge += offsetHalfEdges
+		m.vertices[i] = vertex
+	}
+
+	for i, face := range m.faces[offsetFaces:] {
+		face.HalfEdge += offsetHalfEdges
+		m.faces[i] = face
+	}
+
+	for i, halfEdge := range m.halfEdges[offsetHalfEdges:] {
+		halfEdge.Origin += offsetVertices
+		halfEdge.Face += offsetFaces
+		halfEdge.Prev += offsetHalfEdges
+		halfEdge.Next += offsetHalfEdges
+
+		if !halfEdge.IsBoundary() {
+			halfEdge.Twin += offsetHalfEdges
+		}
+
+		m.halfEdges[i] = halfEdge
+	}
+}
+
 type HEVertex struct {
 	Origin   Vector3
 	HalfEdge int

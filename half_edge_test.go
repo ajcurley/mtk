@@ -166,7 +166,20 @@ func TestHEMeshGetComponentsSingle(t *testing.T) {
 	assert.Equal(t, mesh.GetNumberOfFaces(), len(components[0]))
 }
 
-// Test for the disticnt components for a multiple element mesh
+// Test for the distinct components for a multiple element mesh
 func TestHEMeshGetComponentsMultiple(t *testing.T) {
 	// TODO: implement
+}
+
+// Test merging two meshes
+func TestHEMestMerge(t *testing.T) {
+	path := "testdata/box.obj"
+	mesh, _ := NewHEMeshFromOBJFile(path)
+	other, _ := NewHEMeshFromOBJFile(path)
+
+	mesh.Merge(other)
+
+	assert.Equal(t, 16, mesh.GetNumberOfVertices())
+	assert.Equal(t, 24, mesh.GetNumberOfFaces())
+	assert.Equal(t, 72, mesh.GetNumberOfHalfEdges())
 }
