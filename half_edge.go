@@ -310,6 +310,40 @@ func (m *HEMesh) GetHalfEdge(id int) HEHalfEdge {
 	return m.halfEdges[id]
 }
 
+// Get the distinct components (connected faces). Each component is
+// defined by the indices of the faces.
+func (m *HEMesh) GetComponents() [][]int {
+	components := make([][]int, 0)
+	visited := make([]bool, m.GetNumberOfFaces())
+
+	for next, isVisited := range visited {
+		if !isVisited {
+			component := make([]int, 0)
+			queue := []int{next}
+
+			for len(queue) > 0 {
+				current := queue[0]
+				queue = queue[1:]
+
+				if !visited[current] {
+					visited[current] = true
+					component = append(component, current)
+
+					for _, neighbor := range m.GetFaceNeighbors(current) {
+						if !visited[neighbor] {
+							queue = append(queue, neighbor)
+						}
+					}
+				}
+			}
+
+			components = append(components, component)
+		}
+	}
+
+	return components
+}
+
 type HEVertex struct {
 	Origin   Vector3
 	HalfEdge int

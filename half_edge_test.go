@@ -59,7 +59,7 @@ func TestHEMeshIsConsistentFalse(t *testing.T) {
 }
 
 // Test computing the bounding box
-func TestHEMeshAABB(t *testing.T) {
+func TestHEMeshGetAABB(t *testing.T) {
 	path := "testdata/box.obj"
 	mesh, _ := NewHEMeshFromOBJFile(path)
 
@@ -70,7 +70,7 @@ func TestHEMeshAABB(t *testing.T) {
 }
 
 // Test for the vertex neighbors of a consistently oriented mesh
-func TestHEMeshVertexNeighborsConsistent(t *testing.T) {
+func TestHEMeshGetVertexNeighborsConsistent(t *testing.T) {
 	path := "testdata/box.obj"
 	mesh, _ := NewHEMeshFromOBJFile(path)
 
@@ -85,7 +85,7 @@ func TestHEMeshVertexNeighborsConsistent(t *testing.T) {
 }
 
 // Test for the vertex neighbors of an inconsistently oriented mesh
-func TestHEMeshVertexNeighborsInconsistent(t *testing.T) {
+func TestHEMeshGetVertexNeighborsInconsistent(t *testing.T) {
 	path := "testdata/box.inconsistent.obj"
 	mesh, _ := NewHEMeshFromOBJFile(path)
 
@@ -100,7 +100,7 @@ func TestHEMeshVertexNeighborsInconsistent(t *testing.T) {
 }
 
 // Test for the vertex faces of a consistently oriented mesh
-func TestHEMeshVertexFacesConsistent(t *testing.T) {
+func TestHEMeshGetVertexFacesConsistent(t *testing.T) {
 	path := "testdata/box.obj"
 	mesh, _ := NewHEMeshFromOBJFile(path)
 
@@ -115,7 +115,7 @@ func TestHEMeshVertexFacesConsistent(t *testing.T) {
 }
 
 // Test for the vertex faces of an inconsistently oriented mesh
-func TestHEMeshVertexFacesInconsistent(t *testing.T) {
+func TestHEMeshGetVertexFacesInconsistent(t *testing.T) {
 	path := "testdata/box.inconsistent.obj"
 	mesh, _ := NewHEMeshFromOBJFile(path)
 
@@ -130,7 +130,7 @@ func TestHEMeshVertexFacesInconsistent(t *testing.T) {
 }
 
 // Test for the face vertices
-func TestHEMeshFaceVertices(t *testing.T) {
+func TestHEMeshGetFaceVertices(t *testing.T) {
 	path := "testdata/box.obj"
 	mesh, _ := NewHEMeshFromOBJFile(path)
 
@@ -143,7 +143,7 @@ func TestHEMeshFaceVertices(t *testing.T) {
 }
 
 // Test for the face neighbors
-func TestHEMeshFaceNeighbors(t *testing.T) {
+func TestHEMeshGetFaceNeighbors(t *testing.T) {
 	path := "testdata/box.obj"
 	mesh, _ := NewHEMeshFromOBJFile(path)
 
@@ -153,4 +153,20 @@ func TestHEMeshFaceNeighbors(t *testing.T) {
 	assert.Equal(t, 10, neighbors[0])
 	assert.Equal(t, 6, neighbors[1])
 	assert.Equal(t, 0, neighbors[2])
+}
+
+// Test for the distinct components for a single element mesh
+func TestHEMeshGetComponentsSingle(t *testing.T) {
+	path := "testdata/box.obj"
+	mesh, _ := NewHEMeshFromOBJFile(path)
+
+	components := mesh.GetComponents()
+
+	assert.Equal(t, 1, len(components))
+	assert.Equal(t, mesh.GetNumberOfFaces(), len(components[0]))
+}
+
+// Test for the disticnt components for a multiple element mesh
+func TestHEMeshGetComponentsMultiple(t *testing.T) {
+	// TODO: implement
 }
