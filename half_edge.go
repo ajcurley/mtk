@@ -191,6 +191,55 @@ func (m *HEMesh) GetFace(id int) HEFace {
 	return m.faces[id]
 }
 
+// Get the vertices defining the face by ID
+func (m *HEMesh) GetFaceVertices(id int) []int {
+	faceHalfEdges := m.GetFaceHalfEdges(id)
+	vertices := make([]int, 0, len(faceHalfEdges))
+
+	for _, faceHalfEdge := range faceHalfEdges {
+		halfEdge := m.GetHalfEdge(faceHalfEdge)
+		vertices = append(vertices, halfEdge.Origin)
+	}
+
+	return vertices
+}
+
+// Get the neighboring faces by ID
+func (m *HEMesh) GetFaceNeighbors(id int) []int {
+	faceHalfEdges := m.GetFaceHalfEdges(id)
+	neighbors := make([]int, 0, len(faceHalfEdges))
+
+	for _, faceHalfEdge := range faceHalfEdges {
+		halfEdge := m.GetHalfEdge(faceHalfEdge)
+
+		if !halfEdge.IsBoundary() {
+			twin := m.GetHalfEdge(halfEdge.Twin)
+			neighbors = append(neighbors, twin.Face)
+		}
+	}
+
+	return neighbors
+}
+
+// Get the half edges of the face by ID
+func (m *HEMesh) GetFaceHalfEdges(id int) []int {
+	halfEdges := make([]int, 0)
+
+	face := m.GetFace(id)
+	current := face.HalfEdge
+
+	for {
+		halfEdges = append(halfEdges, current)
+		current = m.GetHalfEdge(current).Next
+
+		if current == face.HalfEdge {
+			break
+		}
+	}
+
+	return halfEdges
+}
+
 // Get the number of half edges
 func (m *HEMesh) GetNumberOfHalfEdges() int {
 	return len(m.halfEdges)

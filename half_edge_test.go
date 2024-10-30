@@ -68,3 +68,29 @@ func TestHEMeshAABB(t *testing.T) {
 	assert.Equal(t, aabb.Min, Vector3{-0.5, -0.5, -0.5})
 	assert.Equal(t, aabb.Max, Vector3{0.5, 0.5, 0.5})
 }
+
+// Test for the face vertices
+func TestHEMeshFaceVertices(t *testing.T) {
+	path := "testdata/box.obj"
+	mesh, _ := NewHEMeshFromOBJFile(path)
+
+	vertices := mesh.GetFaceVertices(1)
+
+	assert.Equal(t, 3, len(vertices))
+	assert.Equal(t, vertices[0], 1)
+	assert.Equal(t, vertices[1], 3)
+	assert.Equal(t, vertices[2], 2)
+}
+
+// Test for the face neighbors
+func TestHEMeshFaceNeighbors(t *testing.T) {
+	path := "testdata/box.obj"
+	mesh, _ := NewHEMeshFromOBJFile(path)
+
+	neighbors := mesh.GetFaceNeighbors(1)
+
+	assert.Equal(t, 3, len(neighbors))
+	assert.Equal(t, 10, neighbors[0])
+	assert.Equal(t, 6, neighbors[1])
+	assert.Equal(t, 0, neighbors[2])
+}
