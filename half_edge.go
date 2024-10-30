@@ -357,12 +357,12 @@ func (m *HEMesh) Merge(other *HEMesh) {
 
 	for i, vertex := range m.vertices[offsetVertices:] {
 		vertex.HalfEdge += offsetHalfEdges
-		m.vertices[i] = vertex
+		m.vertices[i+offsetVertices] = vertex
 	}
 
 	for i, face := range m.faces[offsetFaces:] {
 		face.HalfEdge += offsetHalfEdges
-		m.faces[i] = face
+		m.faces[i+offsetFaces] = face
 	}
 
 	for i, halfEdge := range m.halfEdges[offsetHalfEdges:] {
@@ -375,19 +375,22 @@ func (m *HEMesh) Merge(other *HEMesh) {
 			halfEdge.Twin += offsetHalfEdges
 		}
 
-		m.halfEdges[i] = halfEdge
+		m.halfEdges[i+offsetHalfEdges] = halfEdge
 	}
 }
 
+// Half edge mesh vertex
 type HEVertex struct {
 	Origin   Vector3
 	HalfEdge int
 }
 
+// Half edge mesh face
 type HEFace struct {
 	HalfEdge int
 }
 
+// Half edge mesh half edge
 type HEHalfEdge struct {
 	Origin int
 	Face   int
