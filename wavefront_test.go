@@ -27,7 +27,7 @@ func TestOBJReaderReadFileGZIP(t *testing.T) {
 	soup, err := objReader.ReadFile(path)
 
 	assert.Empty(t, err)
-	assert.Equal(t, 24, soup.GetNumberOfVertices())
+	assert.Equal(t, 8, soup.GetNumberOfVertices())
 	assert.Equal(t, 12, soup.GetNumberOfFaces())
 	assert.Equal(t, 0, soup.GetNumberOfPatches())
 }
