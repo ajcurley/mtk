@@ -3,6 +3,7 @@ package mtk
 import (
 	"errors"
 	"io"
+	"math"
 )
 
 var (
@@ -117,6 +118,26 @@ func NewHEMeshFromOBJFile(path string) (*HEMesh, error) {
 	}
 
 	return NewHEMeshFromPolygonSoup(soup)
+}
+
+// Compute the axis-aligned bounding box
+func (m *HEMesh) GetAABB() AABB {
+	minPosition := Vector3{1, 1, 1}.MulScalar(math.Inf(1))
+	maxPosition := Vector3{1, 1, 1}.MulScalar(math.Inf(-1))
+
+	for _, vertex := range m.vertices {
+		for i := 0; i < 3; i++ {
+			if vertex.Origin[i] < minPosition[i] {
+				minPosition[i] = vertex.Origin[i]
+			}
+
+			if vertex.Origin[i] > maxPosition[i] {
+				maxPosition[i] = vertex.Origin[i]
+			}
+		}
+	}
+
+	return AABB{Min: minPosition, Max: maxPosition}
 }
 
 // Check if the half edge mesh is closed (no open boundaries)
