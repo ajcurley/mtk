@@ -153,18 +153,13 @@ func (m *HEMesh) IsClosed() bool {
 
 // Check if the half edge mesh has consistently oriented faces
 func (m *HEMesh) IsConsistent() bool {
-	visited := make([]bool, m.GetNumberOfHalfEdges())
-
-	for i, halfEdge := range m.halfEdges {
-		if !visited[i] && !halfEdge.IsBoundary() {
+	for _, halfEdge := range m.halfEdges {
+		if !halfEdge.IsBoundary() {
 			twin := m.GetHalfEdge(halfEdge.Twin)
 
 			if twin.Origin == halfEdge.Origin {
 				return false
 			}
-
-			visited[i] = true
-			visited[halfEdge.Twin] = true
 		}
 	}
 
