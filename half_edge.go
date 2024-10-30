@@ -379,6 +379,80 @@ func (m *HEMesh) Merge(other *HEMesh) {
 	}
 }
 
+// Orient the mesh such that the faces of each distinct component share
+// the same normal vector orientaton. This does not guarantee that all
+// components will have the same orientation.
+func (m *HEMesh) Orient() {
+	oriented := make([]bool, m.GetNumberOfFaces())
+
+	for _, component := range m.GetComponents() {
+		queue := []int{component[0]}
+
+		for len(queue) > 0 {
+			current := queue[0]
+			queue = queue[1:]
+
+			if !oriented[current] {
+				oriented[current] = true
+
+				for _, neighbor := range m.GetFaceNeighbors(current) {
+					if !oriented[neighbor] {
+						queue = append(queue, neighbor)
+
+						if !m.isFaceConsistent(current, neighbor) {
+							m.flipFace(neighbor)
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
+// Check if the two faces share a consistent orientation if they share
+// an edge. If no edge is shared, this returns false.
+func (m *HEMesh) isFaceConsistent(i, j int) bool {
+	index := make(map[int]bool)
+
+	for _, faceHalfEdge := range m.GetFaceHalfEdges(i) {
+		index[faceHalfEdge] = true
+	}
+
+	for _, faceHalfEdge := range m.GetFaceHalfEdges(j) {
+		halfEdge := m.GetHalfEdge(faceHalfEdge)
+
+		if _, ok := index[halfEdge.Twin]; ok {
+			twin := m.GetHalfEdge(halfEdge.Twin)
+			return halfEdge.Origin != twin.Origin
+		}
+	}
+
+	return false
+}
+
+// Flip the orientation of the face by reversing the half edges
+func (m *HEMesh) flipFace(id int) {
+	faceHalfEdges := m.GetFaceHalfEdges(id)
+	halfEdges := make([]HEHalfEdge, len(faceHalfEdges))
+
+	for i, faceHalfEdge := range faceHalfEdges {
+		halfEdge := m.GetHalfEdge(faceHalfEdge)
+		prev := halfEdge.Prev
+		next := halfEdge.Next
+		origin := m.GetHalfEdge(prev).Origin
+
+		halfEdge.Next = prev
+		halfEdge.Prev = next
+		halfEdge.Origin = origin
+
+		halfEdges[i] = halfEdge
+	}
+
+	for i, faceHalfEdge := range faceHalfEdges {
+		m.halfEdges[faceHalfEdge] = halfEdges[i]
+	}
+}
+
 // Half edge mesh vertex
 type HEVertex struct {
 	Origin   Vector3

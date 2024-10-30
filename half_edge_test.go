@@ -196,3 +196,27 @@ func TestHEMestMerge(t *testing.T) {
 	assert.True(t, mesh.IsClosed())
 	assert.True(t, mesh.IsConsistent())
 }
+
+// Test orienting a consistently oriented mesh
+func TestHEMeshOrientConsistent(t *testing.T) {
+	path := "testdata/box.obj"
+	mesh, _ := NewHEMeshFromOBJFile(path)
+
+	assert.True(t, mesh.IsConsistent())
+
+	mesh.Orient()
+
+	assert.True(t, mesh.IsConsistent())
+}
+
+// Test orienting an consistently oriented mesh
+func TestHEMeshOrientInconsistent(t *testing.T) {
+	path := "testdata/box.inconsistent.obj"
+	mesh, _ := NewHEMeshFromOBJFile(path)
+
+	assert.False(t, mesh.IsConsistent())
+
+	mesh.Orient()
+
+	assert.True(t, mesh.IsConsistent())
+}
