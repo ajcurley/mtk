@@ -181,6 +181,72 @@ func (m *HEMesh) GetVertex(id int) HEVertex {
 	return m.vertices[id]
 }
 
+// Get the neighboring vertices for a vertex by ID
+func (m *HEMesh) GetVertexNeighbors(id int) []int {
+	neighbors := make([]int, 0)
+	vertex := m.GetVertex(id)
+	current := vertex.HalfEdge
+
+	for {
+		halfEdge := m.GetHalfEdge(current)
+
+		if halfEdge.IsBoundary() {
+			panic("vertex neighbors requires a closed mesh")
+		}
+
+		if halfEdge.Origin == id {
+			neighbor := m.GetHalfEdge(halfEdge.Next).Origin
+			neighbors = append(neighbors, neighbor)
+		} else {
+			neighbors = append(neighbors, halfEdge.Origin)
+		}
+
+		twin := m.GetHalfEdge(halfEdge.Twin)
+
+		if twin.Origin != id {
+			current = twin.Next
+		} else {
+			current = twin.Prev
+		}
+
+		if current == vertex.HalfEdge {
+			break
+		}
+	}
+
+	return neighbors
+}
+
+// Get the faces using the vertex by ID
+func (m *HEMesh) GetVertexFaces(id int) []int {
+	faces := make([]int, 0)
+	vertex := m.GetVertex(id)
+	current := vertex.HalfEdge
+
+	for {
+		halfEdge := m.GetHalfEdge(current)
+
+		if halfEdge.IsBoundary() {
+			panic("vertex faces requires a closed mesh")
+		}
+
+		faces = append(faces, halfEdge.Face)
+		twin := m.GetHalfEdge(halfEdge.Twin)
+
+		if twin.Origin != id {
+			current = twin.Next
+		} else {
+			current = twin.Prev
+		}
+
+		if current == vertex.HalfEdge {
+			break
+		}
+	}
+
+	return faces
+}
+
 // Get the number of faces
 func (m *HEMesh) GetNumberOfFaces() int {
 	return len(m.faces)
@@ -194,17 +260,16 @@ func (m *HEMesh) GetFace(id int) HEFace {
 // Get the vertices defining the face by ID
 func (m *HEMesh) GetFaceVertices(id int) []int {
 	faceHalfEdges := m.GetFaceHalfEdges(id)
-	vertices := make([]int, 0, len(faceHalfEdges))
+	vertices := make([]int, len(faceHalfEdges))
 
-	for _, faceHalfEdge := range faceHalfEdges {
-		halfEdge := m.GetHalfEdge(faceHalfEdge)
-		vertices = append(vertices, halfEdge.Origin)
+	for i, faceHalfEdge := range faceHalfEdges {
+		vertices[i] = m.GetHalfEdge(faceHalfEdge).Origin
 	}
 
 	return vertices
 }
 
-// Get the neighboring faces by ID
+// Get the neighboring faces for a face by ID
 func (m *HEMesh) GetFaceNeighbors(id int) []int {
 	faceHalfEdges := m.GetFaceHalfEdges(id)
 	neighbors := make([]int, 0, len(faceHalfEdges))

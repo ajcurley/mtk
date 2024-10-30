@@ -69,6 +69,66 @@ func TestHEMeshAABB(t *testing.T) {
 	assert.Equal(t, aabb.Max, Vector3{0.5, 0.5, 0.5})
 }
 
+// Test for the vertex neighbors of a consistently oriented mesh
+func TestHEMeshVertexNeighborsConsistent(t *testing.T) {
+	path := "testdata/box.obj"
+	mesh, _ := NewHEMeshFromOBJFile(path)
+
+	neighbors := mesh.GetVertexNeighbors(1)
+
+	assert.Equal(t, 5, len(neighbors))
+	assert.Equal(t, 5, neighbors[0])
+	assert.Equal(t, 4, neighbors[1])
+	assert.Equal(t, 0, neighbors[2])
+	assert.Equal(t, 2, neighbors[3])
+	assert.Equal(t, 3, neighbors[4])
+}
+
+// Test for the vertex neighbors of an inconsistently oriented mesh
+func TestHEMeshVertexNeighborsInconsistent(t *testing.T) {
+	path := "testdata/box.inconsistent.obj"
+	mesh, _ := NewHEMeshFromOBJFile(path)
+
+	neighbors := mesh.GetVertexNeighbors(1)
+
+	assert.Equal(t, 5, len(neighbors))
+	assert.Equal(t, 3, neighbors[0])
+	assert.Equal(t, 2, neighbors[1])
+	assert.Equal(t, 0, neighbors[2])
+	assert.Equal(t, 4, neighbors[3])
+	assert.Equal(t, 5, neighbors[4])
+}
+
+// Test for the vertex faces of a consistently oriented mesh
+func TestHEMeshVertexFacesConsistent(t *testing.T) {
+	path := "testdata/box.obj"
+	mesh, _ := NewHEMeshFromOBJFile(path)
+
+	faces := mesh.GetVertexFaces(1)
+
+	assert.Equal(t, 5, len(faces))
+	assert.Equal(t, 10, faces[0])
+	assert.Equal(t, 5, faces[1])
+	assert.Equal(t, 4, faces[2])
+	assert.Equal(t, 0, faces[3])
+	assert.Equal(t, 1, faces[4])
+}
+
+// Test for the vertex faces of an inconsistently oriented mesh
+func TestHEMeshVertexFacesInconsistent(t *testing.T) {
+	path := "testdata/box.inconsistent.obj"
+	mesh, _ := NewHEMeshFromOBJFile(path)
+
+	faces := mesh.GetVertexFaces(1)
+
+	assert.Equal(t, 5, len(faces))
+	assert.Equal(t, 10, faces[0])
+	assert.Equal(t, 1, faces[1])
+	assert.Equal(t, 0, faces[2])
+	assert.Equal(t, 4, faces[3])
+	assert.Equal(t, 5, faces[4])
+}
+
 // Test for the face vertices
 func TestHEMeshFaceVertices(t *testing.T) {
 	path := "testdata/box.obj"
