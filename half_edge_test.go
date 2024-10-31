@@ -18,6 +18,22 @@ func TestNewHEMeshFromOBJFile(t *testing.T) {
 	assert.Equal(t, 36, mesh.GetNumberOfHalfEdges())
 }
 
+// Test reading from file with patches
+func TestNewHEMeshFromOBJFilePatches(t *testing.T) {
+	path := "testdata/box.groups.obj"
+	mesh, err := NewHEMeshFromOBJFile(path)
+
+	assert.Empty(t, err)
+	assert.Equal(t, 6, mesh.GetNumberOfPatches())
+	assert.Equal(t, 0, mesh.GetFace(0).Patch)
+	assert.Equal(t, 1, mesh.GetFace(1).Patch)
+	assert.Equal(t, 1, mesh.GetFace(2).Patch)
+	assert.Equal(t, 2, mesh.GetFace(3).Patch)
+	assert.Equal(t, 3, mesh.GetFace(4).Patch)
+	assert.Equal(t, 4, mesh.GetFace(5).Patch)
+	assert.Equal(t, 5, mesh.GetFace(6).Patch)
+}
+
 // Test for a non-manifold mesh
 func TestNewHEMeshFromOBJFileNonManifold(t *testing.T) {
 	path := "testdata/box.nonmanifold.obj"

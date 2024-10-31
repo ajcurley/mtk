@@ -14,17 +14,29 @@ type HEMesh struct {
 	vertices  []HEVertex
 	faces     []HEFace
 	halfEdges []HEHalfEdge
+	patches   []HEPatch
 }
 
 // Construct a half edge mesh from a PolygonSoup
 func NewHEMeshFromPolygonSoup(soup *PolygonSoup) (*HEMesh, error) {
 	nVertices := soup.GetNumberOfVertices()
 	nFaces := soup.GetNumberOfFaces()
+	nPatches := soup.GetNumberOfPatches()
 
 	mesh := HEMesh{
 		vertices:  make([]HEVertex, 0, nVertices),
 		faces:     make([]HEFace, 0, nFaces),
 		halfEdges: make([]HEHalfEdge, 0, 3*nFaces),
+		patches:   make([]HEPatch, 0),
+	}
+
+	// Index the patches. Each face will be assigned to the patch when the
+	// faces are indexed.
+	for pi := 0; pi < nPatches; pi++ {
+		patch := HEPatch{
+			Name: soup.GetPatch(pi),
+		}
+		mesh.patches = append(mesh.patches, patch)
 	}
 
 	// Index the vertices without reference to their originating half edge
@@ -45,7 +57,10 @@ func NewHEMeshFromPolygonSoup(soup *PolygonSoup) (*HEMesh, error) {
 		nFaceVertices := len(faceVertices)
 		nHalfEdges := len(mesh.halfEdges)
 
-		face := HEFace{HalfEdge: nHalfEdges}
+		face := HEFace{
+			HalfEdge: nHalfEdges,
+			Patch:    soup.GetFacePatch(fi),
+		}
 		mesh.faces = append(mesh.faces, face)
 
 		for hi := 0; hi < nFaceVertices; hi++ {
@@ -310,6 +325,16 @@ func (m *HEMesh) GetHalfEdge(id int) HEHalfEdge {
 	return m.halfEdges[id]
 }
 
+// Get the number of patches
+func (m *HEMesh) GetNumberOfPatches() int {
+	return len(m.patches)
+}
+
+// Get the patch by ID
+func (m *HEMesh) GetPatch(id int) HEPatch {
+	return m.patches[id]
+}
+
 // Get the distinct components (connected faces). Each component is
 // defined by the indices of the faces.
 func (m *HEMesh) GetComponents() [][]int {
@@ -462,6 +487,7 @@ type HEVertex struct {
 // Half edge mesh face
 type HEFace struct {
 	HalfEdge int
+	Patch    int
 }
 
 // Half edge mesh half edge
@@ -476,4 +502,9 @@ type HEHalfEdge struct {
 // Get if the half edge is a boundary (no twin)
 func (e HEHalfEdge) IsBoundary() bool {
 	return e.Twin < 0
+}
+
+// Half edge mesh patch
+type HEPatch struct {
+	Name string
 }

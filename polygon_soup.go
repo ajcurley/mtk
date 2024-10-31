@@ -53,14 +53,8 @@ func (m *PolygonSoup) GetFace(id int) []int {
 }
 
 // Get a face's patch by face ID
-func (m *PolygonSoup) GetFacePatch(id int) string {
-	patch := m.facePatches[id]
-
-	if patch >= 0 {
-		return m.patches[patch]
-	}
-
-	return ""
+func (m *PolygonSoup) GetFacePatch(id int) int {
+	return m.facePatches[id]
 }
 
 // Insert a face. By default, the patch is empty.
