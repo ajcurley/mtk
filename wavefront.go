@@ -192,26 +192,33 @@ func NewOBJWriter() *OBJWriter {
 	}
 }
 
+// Set the vertices to write
 func (w *OBJWriter) SetVertices(vertices []Vector3) {
 	w.vertices = vertices
 }
 
+// Set the faces to write
 func (w *OBJWriter) SetFaces(faces [][]int) {
 	w.faces = faces
 }
 
+// Set the groups of each face to write. This must be the same length
+// as the faces. Any faces that are not assigned to a group must specify -1.
 func (w *OBJWriter) SetFaceGroups(faceGroups []int) {
 	w.faceGroups = faceGroups
 }
 
+// Set the lines to write
 func (w *OBJWriter) SetLines(lines [][]int) {
 	w.lines = lines
 }
 
+// Set the groups to write
 func (w *OBJWriter) SetGroups(groups []string) {
 	w.groups = groups
 }
 
+// Write the mesh to the io.Writer interface
 func (w *OBJWriter) Write(writer io.Writer) error {
 	buffer := bufio.NewWriter(writer)
 
