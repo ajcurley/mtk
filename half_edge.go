@@ -335,6 +335,19 @@ func (m *HEMesh) GetPatch(id int) HEPatch {
 	return m.patches[id]
 }
 
+// Get the faces assigned to the patch by ID
+func (m *HEMesh) GetPatchFaces(id int) []int {
+	faces := make([]int, 0)
+
+	for i, face := range m.faces {
+		if face.Patch == i {
+			faces = append(faces, i)
+		}
+	}
+
+	return faces
+}
+
 // Get the distinct components (connected faces). Each component is
 // defined by the indices of the faces.
 func (m *HEMesh) GetComponents() [][]int {
