@@ -39,7 +39,13 @@ func (r *OBJReader) Read(reader io.Reader) (*PolygonSoup, error) {
 	count := 1
 	buffer := bufio.NewReader(reader)
 
-	if IsGZIP(buffer) {
+	// Check if the file is gzip compressed.
+	testBytes, err := buffer.Peek(2)
+	if err != nil {
+		return nil, err
+	}
+
+	if testBytes[0] == 31 && testBytes[1] == 139 {
 		gzipFile, err := gzip.NewReader(buffer)
 		if err != nil {
 			return nil, err
