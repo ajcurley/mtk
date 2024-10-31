@@ -173,12 +173,155 @@ func (r *OBJReader) parseGroup(data []byte) {
 	r.polygonSoup.InsertPatch(string(group))
 }
 
-// Check if a bufio.Reader is a GZIP compressed file
-func IsGZIP(reader *bufio.Reader) bool {
-	data, err := reader.Peek(2)
-	if err != nil {
-		return false
+// Write an OBJ file to an io.Writer interface
+type OBJWriter struct {
+	vertices   []Vector3
+	faces      [][]int
+	faceGroups []int
+	lines      [][]int
+	groups     []string
+}
+
+func NewOBJWriter() *OBJWriter {
+	return &OBJWriter{
+		vertices:   make([]Vector3, 0),
+		faces:      make([][]int, 0),
+		faceGroups: make([]int, 0),
+		lines:      make([][]int, 0),
+		groups:     make([]string, 0),
+	}
+}
+
+func (w *OBJWriter) SetVertices(vertices []Vector3) {
+	w.vertices = vertices
+}
+
+func (w *OBJWriter) SetFaces(faces [][]int) {
+	w.faces = faces
+}
+
+func (w *OBJWriter) SetFaceGroups(faceGroups []int) {
+	w.faceGroups = faceGroups
+}
+
+func (w *OBJWriter) SetLines(lines [][]int) {
+	w.lines = lines
+}
+
+func (w *OBJWriter) SetGroups(groups []string) {
+	w.groups = groups
+}
+
+func (w *OBJWriter) Write(writer io.Writer) error {
+	buffer := bufio.NewWriter(writer)
+
+	if err := w.writeVertices(buffer); err != nil {
+		return err
 	}
 
-	return data[0] == 31 && data[1] == 139
+	if err := w.writeLines(buffer); err != nil {
+		return err
+	}
+
+	if err := w.writeFaces(buffer); err != nil {
+		return err
+	}
+
+	return buffer.Flush()
+}
+
+// Write the vertices to the buffer
+func (w *OBJWriter) writeVertices(buffer *bufio.Writer) error {
+	for _, v := range w.vertices {
+		entry := fmt.Sprintf("v %f %f %f\n", v[0], v[1], v[2])
+
+		if _, err := buffer.WriteString(entry); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+// Write the lines to the buffer
+func (w *OBJWriter) writeLines(buffer *bufio.Writer) error {
+	for _, l := range w.lines {
+		if _, err := buffer.WriteString("l"); err != nil {
+			return err
+		}
+
+		for _, v := range l {
+			entry := fmt.Sprintf(" %d", v+1)
+
+			if _, err := buffer.WriteString(entry); err != nil {
+				return err
+			}
+		}
+
+		if _, err := buffer.WriteString("\n"); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+// Write the faces to the buffer
+func (w *OBJWriter) writeFaces(buffer *bufio.Writer) error {
+	// Index the faces for each group
+	groupFaces := make(map[int][]int)
+
+	for i, group := range w.faceGroups {
+		if faces, ok := groupFaces[group]; ok {
+			groupFaces[group] = append(faces, i)
+		} else {
+			groupFaces[group] = []int{i}
+		}
+	}
+
+	// If no faces were indexed, then no faces are assigned to groups. In this case,
+	// assign all faces to group "-1"
+	if len(groupFaces) == 0 {
+		faceGroups := make([]int, len(w.faces))
+
+		for i := 0; i < len(w.faces); i++ {
+			faceGroups[i] = i
+		}
+
+		groupFaces[-1] = faceGroups
+	}
+
+	// Write the faces for each group starting with group "-1" which is all
+	// of the faces that are not assigned to a group.
+	for i := -1; i < len(w.groups); i++ {
+		if faces, ok := groupFaces[i]; ok {
+			if i >= 0 {
+				entry := fmt.Sprintf("g %s\n", w.groups[i])
+
+				if _, err := buffer.WriteString(entry); err != nil {
+					return err
+				}
+			}
+
+			for _, j := range faces {
+				if _, err := buffer.WriteString("f"); err != nil {
+					return err
+				}
+
+				for _, v := range w.faces[j] {
+					entry := fmt.Sprintf(" %d", v+1)
+
+					if _, err := buffer.WriteString(entry); err != nil {
+						return err
+					}
+				}
+
+				if _, err := buffer.WriteString("\n"); err != nil {
+					return err
+				}
+			}
+		}
+	}
+
+	return nil
 }

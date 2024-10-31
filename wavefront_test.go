@@ -1,6 +1,8 @@
 package mtk
 
 import (
+	"bytes"
+	"compress/gzip"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -45,41 +47,65 @@ func TestOBJReaderReadFileGroups(t *testing.T) {
 	assert.Equal(t, 6, soup.GetNumberOfPatches())
 }
 
-/*
 // Write an OBJ file.
-func TestWriteOBJ(t *testing.T) {
-	vertices := []Vector{
-		NewVector(0, 0, 0),
-		NewVector(0, 1, 0),
-		NewVector(1, 1, 0),
+func TestOBJWriterWrite(t *testing.T) {
+	vertices := []Vector3{
+		Vector3{0, 0, 0},
+		Vector3{0, 1, 0},
+		Vector3{1, 1, 0},
+		Vector3{1, 1, 1},
 	}
 
 	faces := [][]int{
 		[]int{0, 1, 2},
+		[]int{2, 0, 3},
+	}
+
+	groups := []string{
+		"testFace",
+	}
+
+	faceGroups := []int{
+		0,
+		-1,
+	}
+
+	lines := [][]int{
+		[]int{0, 1},
+		[]int{2, 3},
 	}
 
 	var expected string
 	expected += "v 0.000000 0.000000 0.000000\n"
 	expected += "v 0.000000 1.000000 0.000000\n"
 	expected += "v 1.000000 1.000000 0.000000\n"
+	expected += "v 1.000000 1.000000 1.000000\n"
+	expected += "l 1 2\n"
+	expected += "l 3 4\n"
+	expected += "f 3 1 4\n"
+	expected += "g testFace\n"
 	expected += "f 1 2 3\n"
 
-	var writer bytes.Buffer
-	objWriter := NewOBJWriter(&writer)
+	objWriter := NewOBJWriter()
 	objWriter.SetVertices(vertices)
+	objWriter.SetLines(lines)
 	objWriter.SetFaces(faces)
+	objWriter.SetFaceGroups(faceGroups)
+	objWriter.SetGroups(groups)
 
-	err := objWriter.Write()
+	var writer bytes.Buffer
+	err := objWriter.Write(&writer)
+
 	assert.Empty(t, err)
 	assert.Equal(t, expected, writer.String())
 }
 
 // Write an OBJ file (gzip).
-func TestWriteOBJGZIP(t *testing.T) {
-	vertices := []Vector{
-		NewVector(0, 0, 0),
-		NewVector(0, 1, 0),
-		NewVector(1, 1, 0),
+func TestOBJWriterWriteGZIP(t *testing.T) {
+	vertices := []Vector3{
+		Vector3{0, 0, 0},
+		Vector3{0, 1, 0},
+		Vector3{1, 1, 0},
 	}
 
 	faces := [][]int{
@@ -96,14 +122,14 @@ func TestWriteOBJGZIP(t *testing.T) {
 	expectedWriter := gzip.NewWriter(&expectedBuf)
 	expectedWriter.Write([]byte(expected))
 
-	var writer bytes.Buffer
-	gzipWriter := gzip.NewWriter(&writer)
-	objWriter := NewOBJWriter(gzipWriter)
+	objWriter := NewOBJWriter()
 	objWriter.SetVertices(vertices)
 	objWriter.SetFaces(faces)
 
-	err := objWriter.Write()
+	var writer bytes.Buffer
+	gzipWriter := gzip.NewWriter(&writer)
+	err := objWriter.Write(gzipWriter)
+
 	assert.Empty(t, err)
 	assert.Equal(t, expectedBuf.String(), writer.String())
 }
-*/
