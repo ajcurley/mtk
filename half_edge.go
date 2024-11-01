@@ -11,6 +11,7 @@ import (
 
 var (
 	ErrNonManifoldMesh = errors.New("non-manifold mesh")
+	ErrOpenMesh        = errors.New("mesh must be closed")
 )
 
 type HEMesh struct {
@@ -258,6 +259,45 @@ func (m *HEMesh) GetVertexFaces(id int) []int {
 	}
 
 	return faces
+}
+
+// Get the Gaussian curvature at the vertex by ID. This assumes the mesh
+// is composed of strictly triangular elements and is oriented.
+func (m *HEMesh) GetVertexCurvature(id int) (float64, error) {
+	var angle, area float64
+	angle = 2 * math.Pi
+
+	vertex := m.GetVertex(id)
+	current := vertex.HalfEdge
+
+	for {
+		halfEdge := m.GetHalfEdge(current)
+		nextHalfEdge := m.GetHalfEdge(halfEdge.Next)
+		prevHalfEdge := m.GetHalfEdge(halfEdge.Prev)
+
+		p := m.GetVertex(prevHalfEdge.Origin).Origin
+		q := m.GetVertex(halfEdge.Origin).Origin
+		r := m.GetVertex(nextHalfEdge.Origin).Origin
+
+		u := p.Sub(q)
+		v := r.Sub(q)
+
+		angle -= u.AngleTo(v)
+		area += u.Cross(v).Mag() * 0.5
+
+		if halfEdge.IsBoundary() {
+			return math.NaN(), ErrOpenMesh
+		}
+
+		twin := m.GetHalfEdge(halfEdge.Twin)
+		current = twin.Next
+
+		if current == vertex.HalfEdge {
+			break
+		}
+	}
+
+	return 3 * angle / area, nil
 }
 
 // Get the number of faces

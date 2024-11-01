@@ -117,3 +117,10 @@ func (v Vector3) Cross(u Vector3) Vector3 {
 		v[0]*u[1] - v[1]*u[0],
 	}
 }
+
+// Get the angle (in radians) between the vectors
+func (v Vector3) AngleTo(u Vector3) float64 {
+	arg := v.Dot(u) / (v.Mag() * u.Mag())
+	arg = min(max(arg, -1), 1)
+	return math.Acos(arg)
+}
