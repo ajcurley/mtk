@@ -1,9 +1,12 @@
 package mtk
 
 import (
+	"compress/gzip"
 	"errors"
 	"io"
 	"math"
+	"os"
+	"strings"
 )
 
 var (
@@ -575,6 +578,56 @@ func (m *HEMesh) ExtractPatchNames(names []string) (*HEMesh, error) {
 	}
 
 	return m.ExtractPatches(patches)
+}
+
+// Export the mesh to OBJ
+func (m *HEMesh) ExportOBJ(w io.Writer) error {
+	vertices := make([]Vector3, m.GetNumberOfVertices())
+	faces := make([][]int, m.GetNumberOfFaces())
+	faceGroups := make([]int, m.GetNumberOfFaces())
+	groups := make([]string, m.GetNumberOfPatches())
+
+	for i, vertex := range m.vertices {
+		vertices[i] = vertex.Origin
+	}
+
+	for i, face := range m.faces {
+		faces[i] = m.GetFaceVertices(i)
+		faceGroups[i] = face.Patch
+	}
+
+	for i, patch := range m.patches {
+		groups[i] = patch.Name
+	}
+
+	objWriter := NewOBJWriter()
+	objWriter.SetVertices(vertices)
+	objWriter.SetFaces(faces)
+	objWriter.SetFaceGroups(faceGroups)
+	objWriter.SetGroups(groups)
+
+	return objWriter.Write(w)
+}
+
+// Export the mesh to an OBJ file
+func (m *HEMesh) ExportOBJFile(path string) error {
+	var writer io.Writer
+
+	file, err := os.Create(path)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	writer = file
+
+	if strings.HasSuffix(strings.ToLower(path), ".gz") {
+		gzipFile := gzip.NewWriter(file)
+		defer gzipFile.Close()
+		writer = gzipFile
+	}
+
+	return m.ExportOBJ(writer)
 }
 
 // Half edge mesh vertex
