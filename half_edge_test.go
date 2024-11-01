@@ -236,3 +236,13 @@ func TestHEMeshOrientInconsistent(t *testing.T) {
 
 	assert.True(t, mesh.IsConsistent())
 }
+
+// Test for a face normal
+func TestHEMeshGetFaceNormal(t *testing.T) {
+	path := "testdata/box.obj"
+	mesh, _ := NewHEMeshFromOBJFile(path)
+
+	normal := mesh.GetFaceNormal(0)
+
+	assert.Equal(t, Vector3{-1, 0, 0}, normal)
+}

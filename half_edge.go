@@ -315,6 +315,20 @@ func (m *HEMesh) GetFaceHalfEdges(id int) []int {
 	return halfEdges
 }
 
+// Get the unit normal vector of the face by ID
+func (m *HEMesh) GetFaceNormal(id int) Vector3 {
+	normal := Vector3{0, 0, 0}
+	vertices := m.GetFaceVertices(id)
+
+	for i := 0; i < len(vertices); i++ {
+		p := m.GetVertex(vertices[i]).Origin
+		q := m.GetVertex(vertices[(i+1)%len(vertices)]).Origin
+		normal = normal.Add(p.Cross(q))
+	}
+
+	return normal.Unit()
+}
+
 // Get the number of half edges
 func (m *HEMesh) GetNumberOfHalfEdges() int {
 	return len(m.halfEdges)
