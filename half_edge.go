@@ -505,6 +505,78 @@ func (m *HEMesh) flipFace(id int) {
 	}
 }
 
+// Extract a subset of the mesh by face IDs
+func (m *HEMesh) ExtractFaces(ids []int) (*HEMesh, error) {
+	soup := NewPolygonSoup()
+	indexVertices := make(map[int]int)
+	indexPatches := make(map[int]int)
+
+	for _, originalFace := range ids {
+		face := m.GetFace(originalFace)
+		faceVertices := m.GetFaceVertices(originalFace)
+
+		for i, originalVertex := range faceVertices {
+			if _, ok := indexVertices[originalVertex]; !ok {
+				vertex := m.GetVertex(originalVertex)
+				soup.InsertVertex(vertex.Origin)
+				indexVertices[originalVertex] = len(indexVertices)
+			}
+
+			faceVertices[i] = indexVertices[originalVertex]
+		}
+
+		if face.Patch >= 0 {
+			if _, ok := indexPatches[face.Patch]; !ok {
+				patch := m.GetPatch(face.Patch)
+				soup.InsertPatch(patch.Name)
+				indexPatches[face.Patch] = len(indexPatches)
+			}
+
+			soup.InsertFaceWithPatch(faceVertices, indexPatches[face.Patch])
+		} else {
+			soup.InsertFace(faceVertices)
+		}
+	}
+
+	return NewHEMeshFromPolygonSoup(soup)
+}
+
+// Extract a subset of the mesh by patch IDs
+func (m *HEMesh) ExtractPatches(ids []int) (*HEMesh, error) {
+	indexPatches := make(map[int]bool)
+	faces := make([]int, 0)
+
+	for _, i := range ids {
+		indexPatches[i] = true
+	}
+
+	for i, face := range m.faces {
+		if _, ok := indexPatches[face.Patch]; ok {
+			faces = append(faces, i)
+		}
+	}
+
+	return m.ExtractFaces(faces)
+}
+
+// Extract a subset of the mesh by patch names
+func (m *HEMesh) ExtractPatchNames(names []string) (*HEMesh, error) {
+	indexPatches := make(map[string]bool)
+	patches := make([]int, 0)
+
+	for _, name := range names {
+		indexPatches[name] = true
+	}
+
+	for i, patch := range m.patches {
+		if _, ok := indexPatches[patch.Name]; ok {
+			patches = append(patches, i)
+		}
+	}
+
+	return m.ExtractPatches(patches)
+}
+
 // Half edge mesh vertex
 type HEVertex struct {
 	Origin   Vector3

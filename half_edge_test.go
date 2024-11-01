@@ -246,3 +246,29 @@ func TestHEMeshGetFaceNormal(t *testing.T) {
 
 	assert.Equal(t, Vector3{-1, 0, 0}, normal)
 }
+
+// Test extract faces from a mesh
+func TestHEMeshExtractFaces(t *testing.T) {
+	path := "testdata/box.obj"
+	mesh, _ := NewHEMeshFromOBJFile(path)
+
+	subset, err := mesh.ExtractFaces([]int{0, 1, 7})
+
+	assert.Empty(t, err)
+	assert.Equal(t, 6, subset.GetNumberOfVertices())
+	assert.Equal(t, 3, subset.GetNumberOfFaces())
+	assert.Equal(t, 9, subset.GetNumberOfHalfEdges())
+}
+
+// Test extract patch names from a mesh
+func TestHEMeshExtractPatchNames(t *testing.T) {
+	path := "testdata/box.groups.obj"
+	mesh, _ := NewHEMeshFromOBJFile(path)
+
+	subset, err := mesh.ExtractPatchNames([]string{"bottom", "back"})
+
+	assert.Empty(t, err)
+	assert.Equal(t, 6, subset.GetNumberOfVertices())
+	assert.Equal(t, 3, subset.GetNumberOfFaces())
+	assert.Equal(t, 10, subset.GetNumberOfHalfEdges())
+}
