@@ -26,3 +26,9 @@ func (t Triangle) Area() float64 {
 	pr := t[2].Sub(t[0])
 	return 0.5 * pq.Cross(pr).Mag()
 }
+
+// Check for an intersection with an AABB
+func (t Triangle) IntersectsAABB(a AABB) bool {
+	// TODO: implement
+	panic("not implemented")
+}

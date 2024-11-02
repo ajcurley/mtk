@@ -7,22 +7,32 @@ const (
 	OctreeMaxItemsPerNode int = 50
 )
 
-// Generic octree implementation
-type Octree[T IntersectsAABB] struct {
+// Linear octree implementation
+type Octree struct {
 	nodes map[uint64]*octreeNode
-	items []T
+	items []IntersectsAABB
 }
 
-// Construct an Octree indexing items of type T
-func NewOctree[T IntersectsAABB](bounds AABB) *Octree[T] {
-	return &Octree[T]{
+// Construct an Octree indexing items
+func NewOctree(bounds AABB) *Octree {
+	return &Octree{
 		nodes: map[uint64]*octreeNode{1: newOctreeNode(1, bounds)},
-		items: make([]T, 0),
+		items: make([]IntersectsAABB, 0),
 	}
 }
 
+// Get the number of indexed items
+func (o *Octree) GetNumberOfItems() int {
+	return len(o.items)
+}
+
+// Get an item by ID
+func (o *Octree) GetItem(id int) IntersectsAABB {
+	return o.items[id]
+}
+
 // Insert an item into the octree
-func (o *Octree[T]) Insert(item T) (int, bool) {
+func (o *Octree) Insert(item IntersectsAABB) (int, bool) {
 	index := len(o.items)
 	queue := []uint64{1}
 	codes := make([]uint64, 0)
@@ -60,7 +70,7 @@ func (o *Octree[T]) Insert(item T) (int, bool) {
 }
 
 // Split an octree node
-func (o *Octree[T]) Split(code uint64) {
+func (o *Octree) Split(code uint64) {
 	if node, ok := o.nodes[code]; ok && node.canSplit() {
 		for octant, childCode := range node.childrenCodes() {
 			bounds := node.bounds.Octant(octant)
@@ -78,6 +88,58 @@ func (o *Octree[T]) Split(code uint64) {
 		node.isLeaf = false
 		clear(node.items)
 	}
+}
+
+// Query the octree for intersecting items
+func (o *Octree) Query(query IntersectsAABB) []int {
+	var code uint64
+	cache := make([]bool, o.GetNumberOfItems())
+	items := make([]int, 0)
+	queue := []uint64{1}
+
+	for len(queue) > 0 {
+		code, queue = queue[0], queue[1:]
+		node := o.nodes[code]
+
+		if query.IntersectsAABB(node.bounds) {
+			if node.isLeaf {
+				for _, index := range node.items {
+					if !cache[index] {
+						var intersects bool
+
+						switch value := query.(type) {
+						case AABB:
+							if item, ok := o.items[index].(IntersectsAABB); ok {
+								intersects = item.IntersectsAABB(value)
+							}
+						case Ray:
+							if item, ok := o.items[index].(IntersectsRay); ok {
+								intersects = item.IntersectsRay(value)
+							}
+						case Triangle:
+							if item, ok := o.items[index].(IntersectsTriangle); ok {
+								intersects = item.IntersectsTriangle(value)
+							}
+						case Vector3:
+							if item, ok := o.items[index].(IntersectsVector3); ok {
+								intersects = item.IntersectsVector3(value)
+							}
+						}
+
+						if intersects {
+							cache[index] = true
+							items = append(items, index)
+						}
+					}
+				}
+			} else {
+				childrenCodes := node.childrenCodes()
+				queue = append(queue, childrenCodes...)
+			}
+		}
+	}
+
+	return items
 }
 
 // Node within an Octree

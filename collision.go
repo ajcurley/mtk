@@ -16,7 +16,7 @@ type IntersectsRay interface {
 
 // Interface for a Triangle intersection test
 type IntersectsTriangle interface {
-	IntersectsTriangle(Triangle)
+	IntersectsTriangle(Triangle) bool
 }
 
 // Interface for a Vector3 intersection test
