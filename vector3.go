@@ -124,3 +124,13 @@ func (v Vector3) AngleTo(u Vector3) float64 {
 	arg = min(max(arg, -1), 1)
 	return math.Acos(arg)
 }
+
+// Check for an intersection with an AABB
+func (v Vector3) IntersectsAABB(aabb AABB) bool {
+	return v[0] >= aabb.Min[0] &&
+		v[0] <= aabb.Max[0] &&
+		v[1] >= aabb.Min[1] &&
+		v[1] <= aabb.Max[1] &&
+		v[2] >= aabb.Min[2] &&
+		v[2] <= aabb.Max[2]
+}
