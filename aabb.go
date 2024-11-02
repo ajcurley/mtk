@@ -6,6 +6,11 @@ type AABB struct {
 	Max Vector3
 }
 
+// Construct an AABB from its min/max bounds
+func NewAABB(minBound, maxBound Vector3) AABB {
+	return AABB{Min: minBound, Max: maxBound}
+}
+
 // Get the center
 func (a AABB) Center() Vector3 {
 	return a.Max.Add(a.Min).MulScalar(0.5)

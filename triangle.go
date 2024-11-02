@@ -3,6 +3,11 @@ package mtk
 // Three dimensional Cartesian triangle
 type Triangle [3]Vector3
 
+// Construct a Triangle from its points
+func NewTriangle(p, q, r Vector3) Triangle {
+	return Triangle{p, q, r}
+}
+
 // Get the normal vector (not necessarily a unit vector)
 func (t Triangle) Normal() Vector3 {
 	pq := t[1].Sub(t[0])

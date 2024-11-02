@@ -1,29 +1,38 @@
 package mtk
 
-import (
-	"math"
-)
-
 // Three dimension Cartesian ray
 type Ray struct {
 	Origin    Vector3
 	Direction Vector3
 }
 
+// Construct a Ray from its origin and direction
+func NewRay(origin, direction Vector3) Ray {
+	return Ray{
+		Origin:    origin,
+		Direction: direction,
+	}
+}
+
 // Check for an intersection with an AABB
 func (r Ray) IntersectsAABB(a AABB) bool {
 	inv := r.Direction.Inv()
-	tMin := math.Inf(1)
-	tMax := math.Inf(-1)
+	tx0 := (a.Min[0] - r.Origin[0]) * inv[0]
+	tx1 := (a.Max[0] - r.Origin[0]) * inv[0]
+	tMin := min(tx0, tx1)
+	tMax := max(tx0, tx1)
 
-	for i := 0; i < 3; i++ {
-		t1 := (a.Min[i] - r.Origin[i]) * inv[i]
-		t2 := (a.Max[i] - r.Origin[i]) * inv[i]
-		tMin = max(tMin, min(t1, t2))
-		tMax = min(tMax, max(t1, t2))
-	}
+	ty0 := (a.Min[1] - r.Origin[1]) * inv[1]
+	ty1 := (a.Max[1] - r.Origin[1]) * inv[1]
+	tMin = max(tMin, min(ty0, ty1))
+	tMax = min(tMax, max(ty0, ty1))
 
-	return tMax >= max(tMin, 0.)
+	tz0 := (a.Min[2] - r.Origin[2]) * inv[2]
+	tz1 := (a.Max[2] - r.Origin[2]) * inv[2]
+	tMin = max(tMin, min(tz0, tz1))
+	tMax = min(tMax, max(tz0, tz1))
+
+	return tMax >= max(tMin, 0)
 }
 
 // Check for an intersection with a Triangle

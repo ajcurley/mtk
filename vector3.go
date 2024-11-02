@@ -7,6 +7,11 @@ import (
 // Three-dimensional Cartesian vector
 type Vector3 [3]float64
 
+// Construct a Vector3 from its components
+func NewVector3(x, y, z float64) Vector3 {
+	return Vector3{x, y, z}
+}
+
 // Get the x-component
 func (v Vector3) X() float64 {
 	return v[0]

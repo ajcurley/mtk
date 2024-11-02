@@ -6,6 +6,36 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+// Test a Ray/AABB intersection hit
+func TestRayAABBIntersectsHit(t *testing.T) {
+	ray := Ray{
+		Origin:    Vector3{-1, 0.5, 0.5},
+		Direction: Vector3{1, 0, 0},
+	}
+
+	aabb := AABB{
+		Min: Vector3{0, 0, 0},
+		Max: Vector3{1, 1, 1},
+	}
+
+	assert.True(t, ray.IntersectsAABB(aabb))
+}
+
+// Test a Ray/AABB intersection miss
+func TestRayAABBIntersectsMiss(t *testing.T) {
+	ray := Ray{
+		Origin:    Vector3{-1, 2, 2},
+		Direction: Vector3{1, 0, 0},
+	}
+
+	aabb := AABB{
+		Min: Vector3{0, 0, 0},
+		Max: Vector3{1, 1, 1},
+	}
+
+	assert.False(t, ray.IntersectsAABB(aabb))
+}
+
 // Test a Ray/Triangle intersection hit
 func TestRayTriangleIntersectsHit(t *testing.T) {
 	ray := Ray{
