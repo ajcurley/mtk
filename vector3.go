@@ -32,6 +32,15 @@ func (v Vector3) Unit() Vector3 {
 	return v.DivScalar(v.Mag())
 }
 
+// Get the inverse of the vector
+func (v Vector3) Inv() Vector3 {
+	return Vector3{
+		1 / v[0],
+		1 / v[1],
+		1 / v[2],
+	}
+}
+
 // Elementwise vector addition v + u
 func (v Vector3) Add(u Vector3) Vector3 {
 	return Vector3{
@@ -126,11 +135,11 @@ func (v Vector3) AngleTo(u Vector3) float64 {
 }
 
 // Check for an intersection with an AABB
-func (v Vector3) IntersectsAABB(aabb AABB) bool {
-	return v[0] >= aabb.Min[0] &&
-		v[0] <= aabb.Max[0] &&
-		v[1] >= aabb.Min[1] &&
-		v[1] <= aabb.Max[1] &&
-		v[2] >= aabb.Min[2] &&
-		v[2] <= aabb.Max[2]
+func (v Vector3) IntersectsAABB(a AABB) bool {
+	return v[0] >= a.Min[0] &&
+		v[0] <= a.Max[0] &&
+		v[1] >= a.Min[1] &&
+		v[1] <= a.Max[1] &&
+		v[2] >= a.Min[2] &&
+		v[2] <= a.Max[2]
 }
