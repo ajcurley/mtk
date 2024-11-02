@@ -10,6 +10,7 @@ import (
 // Test calculating the Vector3 magnitude
 func TestVector3Mag(t *testing.T) {
 	v := Vector3{-3, 0, 4}
+
 	assert.Equal(t, v.Mag(), 5.)
 }
 
@@ -17,6 +18,7 @@ func TestVector3Mag(t *testing.T) {
 func TestVector3Unit(t *testing.T) {
 	v := Vector3{-3, 0, 4}
 	u := v.Unit()
+
 	assert.Equal(t, u.X(), -3./5.)
 	assert.Equal(t, u.Y(), 0.)
 	assert.Equal(t, u.Z(), 4./5.)
@@ -27,6 +29,7 @@ func TestVector3Add(t *testing.T) {
 	v := Vector3{-3, 0, 4}
 	u := Vector3{21, 9, 7}
 	w := v.Add(u)
+
 	assert.Equal(t, w.X(), 18.)
 	assert.Equal(t, w.Y(), 9.)
 	assert.Equal(t, w.Z(), 11.)
@@ -36,6 +39,7 @@ func TestVector3Add(t *testing.T) {
 func TestVector3AddScalar(t *testing.T) {
 	v := Vector3{-3, 0, 4}
 	w := v.AddScalar(6)
+
 	assert.Equal(t, w.X(), 3.)
 	assert.Equal(t, w.Y(), 6.)
 	assert.Equal(t, w.Z(), 10.)
@@ -46,6 +50,7 @@ func TestVector3Sub(t *testing.T) {
 	v := Vector3{-3, 0, 4}
 	u := Vector3{21, 9, 7}
 	w := v.Sub(u)
+
 	assert.Equal(t, w.X(), -24.)
 	assert.Equal(t, w.Y(), -9.)
 	assert.Equal(t, w.Z(), -3.)
@@ -55,6 +60,7 @@ func TestVector3Sub(t *testing.T) {
 func TestVector3SubScalar(t *testing.T) {
 	v := Vector3{-3, 0, 4}
 	w := v.SubScalar(6)
+
 	assert.Equal(t, w.X(), -9.)
 	assert.Equal(t, w.Y(), -6.)
 	assert.Equal(t, w.Z(), -2.)
@@ -65,6 +71,7 @@ func TestVector3Mul(t *testing.T) {
 	v := Vector3{-3, 0, 4}
 	u := Vector3{21, 9, 7}
 	w := v.Mul(u)
+
 	assert.Equal(t, w.X(), -63.)
 	assert.Equal(t, w.Y(), 0.)
 	assert.Equal(t, w.Z(), 28.)
@@ -74,6 +81,7 @@ func TestVector3Mul(t *testing.T) {
 func TestVector3MulScalar(t *testing.T) {
 	v := Vector3{-3, 0, 4}
 	w := v.MulScalar(6)
+
 	assert.Equal(t, w.X(), -18.)
 	assert.Equal(t, w.Y(), 0.)
 	assert.Equal(t, w.Z(), 24.)
@@ -84,6 +92,7 @@ func TestVector3Div(t *testing.T) {
 	v := Vector3{-3, 0, 4}
 	u := Vector3{21, 9, 7}
 	w := v.Div(u)
+
 	assert.Equal(t, w.X(), -3./21.)
 	assert.Equal(t, w.Y(), 0.)
 	assert.Equal(t, w.Z(), 4./7.)
@@ -94,6 +103,7 @@ func TestVector3DivZero(t *testing.T) {
 	v := Vector3{-3, 0, 4}
 	u := Vector3{0, 1, 2}
 	w := v.Div(u)
+
 	assert.True(t, math.IsInf(w.X(), -1))
 	assert.Equal(t, w.Y(), 0.)
 	assert.Equal(t, w.Z(), 2.)
@@ -103,6 +113,7 @@ func TestVector3DivZero(t *testing.T) {
 func TestVector3DivScalar(t *testing.T) {
 	v := Vector3{-3, 0, 4}
 	w := v.DivScalar(6)
+
 	assert.Equal(t, w.X(), -1./2.)
 	assert.Equal(t, w.Y(), 0.)
 	assert.Equal(t, w.Z(), 2./3.)
@@ -112,6 +123,7 @@ func TestVector3DivScalar(t *testing.T) {
 func TestVector3DivScalarZero(t *testing.T) {
 	v := Vector3{-3, 0, 4}
 	w := v.DivScalar(0)
+
 	assert.True(t, math.IsInf(w.X(), -1))
 	assert.True(t, math.IsNaN(w.Y()))
 	assert.True(t, math.IsInf(w.Z(), 1))
@@ -122,6 +134,7 @@ func TestVector3Dot(t *testing.T) {
 	v := Vector3{-3, 0, 4}
 	u := Vector3{9, 1, 6}
 	d := v.Dot(u)
+
 	assert.Equal(t, d, -3.)
 }
 
@@ -130,7 +143,24 @@ func TestVector3Cross(t *testing.T) {
 	v := Vector3{-3, 8, 4}
 	u := Vector3{9, 7, 2}
 	w := v.Cross(u)
+
 	assert.Equal(t, w.X(), -12.)
 	assert.Equal(t, w.Y(), 42.)
 	assert.Equal(t, w.Z(), -93.)
+}
+
+// Test an AABB/Vector3 intersection hit
+func TestVector3IntersectsAABBHit(t *testing.T) {
+	v := Vector3{1, 1, 1}
+	a := AABB{Min: Vector3{0, 0, 0}, Max: Vector3{2, 2, 2}}
+
+	assert.True(t, v.IntersectsAABB(a))
+}
+
+// Test an AABB/Vector3 intersection miss
+func TestVector3IntersectsAABBMiss(t *testing.T) {
+	v := Vector3{4, 4, 4}
+	a := AABB{Min: Vector3{0, 0, 0}, Max: Vector3{2, 2, 2}}
+
+	assert.False(t, v.IntersectsAABB(a))
 }
