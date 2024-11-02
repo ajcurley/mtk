@@ -26,6 +26,29 @@ func (a AABB) HalfSize() Vector3 {
 	return a.Size().MulScalar(0.5)
 }
 
+// Get the AABB representing the octant
+func (a AABB) Octant(octant int) AABB {
+	halfSize := a.HalfSize()
+	minBound := a.Min
+
+	if octant&4 != 0 {
+		minBound[0] += halfSize[0]
+	}
+
+	if octant&2 != 0 {
+		minBound[1] += halfSize[1]
+	}
+
+	if octant&1 != 0 {
+		minBound[2] += halfSize[2]
+	}
+
+	return AABB{
+		Min: minBound,
+		Max: minBound.Add(halfSize),
+	}
+}
+
 // Check for an intersection with an AABB
 func (a AABB) IntersectsAABB(b AABB) bool {
 	return a.Min[0] <= b.Max[0] &&
