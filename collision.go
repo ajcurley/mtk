@@ -1,8 +1,7 @@
 package mtk
 
 const (
-	// Geometric tolerance
-	EPSILON float64 = 1e-8
+	GeometricTolerance float64 = 1e-8
 )
 
 // Interface for an AABB intersection test
