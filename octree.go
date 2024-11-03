@@ -1,6 +1,9 @@
 package mtk
 
-import ()
+import (
+	"runtime"
+	"sync"
+)
 
 const (
 	OctreeMaxDepth        int = 21
@@ -138,6 +141,35 @@ func (o *Octree) Query(query IntersectsAABB) []int {
 			}
 		}
 	}
+
+	return items
+}
+
+// Query the octree for many intersecting items in parallel using the available
+// number of processors.
+func (o *Octree) QueryMany(queries []IntersectsAABB) [][]int {
+	var wg sync.WaitGroup
+	queue := make(chan int, len(queries))
+	items := make([][]int, len(queries))
+
+	for i := range queries {
+		queue <- i
+	}
+
+	for i := 0; i < runtime.NumCPU(); i++ {
+		wg.Add(1)
+
+		go func() {
+			defer wg.Done()
+
+			for i := range queue {
+				items[i] = o.Query(queries[i])
+			}
+		}()
+	}
+
+	close(queue)
+	wg.Wait()
 
 	return items
 }

@@ -64,3 +64,43 @@ func TestOctreeQueryAABB(t *testing.T) {
 
 	assert.Equal(t, 11, len(results))
 }
+
+// Test querying an octree with multiple AABB in parallel
+func TestOctreeQueryManyAABB(t *testing.T) {
+	bounds := AABB{Min: Vector3{0, 0, 0}, Max: Vector3{1, 1, 1}}
+	octree := NewOctree(bounds)
+	count := OctreeMaxItemsPerNode * 2
+
+	for i := 0; i < count; i++ {
+		point := Vector3{
+			float64(i) / float64(count),
+			float64(i) / float64(count),
+			float64(i) / float64(count),
+		}
+		octree.Insert(point)
+	}
+
+	assert.Equal(t, count, octree.GetNumberOfItems())
+
+	queries := []IntersectsAABB{
+		AABB{
+			Min: Vector3{0.15, 0.15, 0.15},
+			Max: Vector3{0.25, 0.25, 0.25},
+		},
+		AABB{
+			Min: Vector3{0.25, 0.25, 0.25},
+			Max: Vector3{0.30, 0.30, 0.30},
+		},
+		AABB{
+			Min: Vector3{0.35, 0.35, 0.35},
+			Max: Vector3{0.45, 0.45, 0.45},
+		},
+	}
+
+	results := octree.QueryMany(queries)
+
+	assert.Equal(t, 3, len(results))
+	assert.Equal(t, 11, len(results[0]))
+	assert.Equal(t, 6, len(results[1]))
+	assert.Equal(t, 11, len(results[2]))
+}
