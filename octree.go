@@ -7,7 +7,7 @@ import (
 
 const (
 	OctreeMaxDepth        int = 21
-	OctreeMaxItemsPerNode int = 50
+	OctreeMaxItemsPerNode int = 5000
 )
 
 // Linear octree implementation
@@ -115,17 +115,33 @@ func (o *Octree) Query(query IntersectsAABB) []int {
 							if item, ok := o.items[index].(IntersectsAABB); ok {
 								intersects = item.IntersectsAABB(value)
 							}
+						case *AABB:
+							if item, ok := o.items[index].(IntersectsAABB); ok {
+								intersects = item.IntersectsAABB(*value)
+							}
 						case Ray:
 							if item, ok := o.items[index].(IntersectsRay); ok {
 								intersects = item.IntersectsRay(value)
+							}
+						case *Ray:
+							if item, ok := o.items[index].(IntersectsRay); ok {
+								intersects = item.IntersectsRay(*value)
 							}
 						case Triangle:
 							if item, ok := o.items[index].(IntersectsTriangle); ok {
 								intersects = item.IntersectsTriangle(value)
 							}
+						case *Triangle:
+							if item, ok := o.items[index].(IntersectsTriangle); ok {
+								intersects = item.IntersectsTriangle(*value)
+							}
 						case Vector3:
 							if item, ok := o.items[index].(IntersectsVector3); ok {
 								intersects = item.IntersectsVector3(value)
+							}
+						case *Vector3:
+							if item, ok := o.items[index].(IntersectsVector3); ok {
+								intersects = item.IntersectsVector3(*value)
 							}
 						}
 

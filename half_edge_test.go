@@ -75,11 +75,11 @@ func TestHEMeshIsConsistentFalse(t *testing.T) {
 }
 
 // Test computing the bounding box
-func TestHEMeshGetAABB(t *testing.T) {
+func TestHEMeshGetBounds(t *testing.T) {
 	path := "testdata/box.obj"
 	mesh, _ := NewHEMeshFromOBJFile(path)
 
-	aabb := mesh.GetAABB()
+	aabb := mesh.GetBounds()
 
 	assert.Equal(t, aabb.Min, Vector3{-0.5, -0.5, -0.5})
 	assert.Equal(t, aabb.Max, Vector3{0.5, 0.5, 0.5})

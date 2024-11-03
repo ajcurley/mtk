@@ -62,7 +62,7 @@ func TestOctreeQueryAABB(t *testing.T) {
 	}
 	results := octree.Query(query)
 
-	assert.Equal(t, 11, len(results))
+	assert.Equal(t, count/10+1, len(results))
 }
 
 // Test querying an octree with multiple AABB in parallel
@@ -100,7 +100,7 @@ func TestOctreeQueryManyAABB(t *testing.T) {
 	results := octree.QueryMany(queries)
 
 	assert.Equal(t, 3, len(results))
-	assert.Equal(t, 11, len(results[0]))
-	assert.Equal(t, 6, len(results[1]))
-	assert.Equal(t, 11, len(results[2]))
+	assert.Equal(t, count/10+1, len(results[0]))
+	assert.Equal(t, count/20+1, len(results[1]))
+	assert.Equal(t, count/10+1, len(results[2]))
 }

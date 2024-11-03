@@ -140,7 +140,7 @@ func NewHEMeshFromOBJFile(path string) (*HEMesh, error) {
 }
 
 // Compute the axis-aligned bounding box
-func (m *HEMesh) GetAABB() AABB {
+func (m *HEMesh) GetBounds() AABB {
 	minPosition := Vector3{1, 1, 1}.MulScalar(math.Inf(1))
 	maxPosition := Vector3{1, 1, 1}.MulScalar(math.Inf(-1))
 
