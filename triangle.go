@@ -24,6 +24,15 @@ func (t Triangle) UnitNormal() Vector3 {
 	return t.Normal().Unit()
 }
 
+// Get the center
+func (t Triangle) Center() Vector3 {
+	return NewVector3(
+		(t[0][0]+t[1][0]+t[2][0])/3,
+		(t[0][1]+t[1][1]+t[2][1])/3,
+		(t[0][2]+t[1][2]+t[2][2])/3,
+	)
+}
+
 // Get the area
 func (t Triangle) Area() float64 {
 	return 0.5 * t.Normal().Mag()
