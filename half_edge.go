@@ -7,6 +7,7 @@ import (
 	"math"
 	"os"
 	"strings"
+	"fmt"
 )
 
 var (
@@ -301,6 +302,29 @@ func (m *HEMesh) GetVertexCurvature(id int) (float64, error) {
 	}
 
 	return 3 * angle / area, nil
+}
+
+// Get if the vertex is on a boundary. This assumes the mesh is consistently
+// oriented. For inconsistent meshes, this may yield incorrect results.
+func (m *HEMesh) IsVertexOnBoundary(id int) bool {
+	vertex := m.GetVertex(id)
+	current := vertex.HalfEdge
+
+	for {
+		halfEdge := m.GetHalfEdge(current)
+
+		if halfEdge.IsBoundary() {
+			return true
+		}
+
+		current = m.GetHalfEdge(halfEdge.Twin).Next
+
+		if current == vertex.HalfEdge {
+			break
+		}
+	}
+
+	return false
 }
 
 // Get the number of faces
@@ -632,6 +656,14 @@ func (m *HEMesh) ExtractPatchNames(names []string) (*HEMesh, error) {
 	}
 
 	return m.ExtractPatches(patches)
+}
+
+// Merge vertices of open edges with in a tolerance to remove duplicates
+// without generating non-manifold edges. This requires the mesh to be
+// consistently oriented.
+func (m *HEMesh) MergeVertices(tol float64) error {
+	// TODO: implement
+	return nil
 }
 
 // Export the mesh to OBJ

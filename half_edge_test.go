@@ -272,3 +272,14 @@ func TestHEMeshExtractPatchNames(t *testing.T) {
 	assert.Equal(t, 3, subset.GetNumberOfFaces())
 	assert.Equal(t, 10, subset.GetNumberOfHalfEdges())
 }
+
+// Test merging duplicate vertices
+func TestHEMeshMergeVertices(t *testing.T) {
+	path := "testdata/box.obj"
+	path = "/Users/acurley/projects/cfd/geometry/car.obj.gz"
+	mesh, _ := NewHEMeshFromOBJFile(path)
+
+	err := mesh.MergeVertices(1e-6)
+
+	assert.False(t, err == nil)
+}
