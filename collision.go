@@ -14,6 +14,11 @@ type IntersectsRay interface {
 	IntersectsRay(Ray) bool
 }
 
+// Interface for a Sphere intersection test
+type IntersectsSphere interface {
+	IntersectsSphere(Sphere) bool
+}
+
 // Interface for a Triangle intersection test
 type IntersectsTriangle interface {
 	IntersectsTriangle(Triangle) bool

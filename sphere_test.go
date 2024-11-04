@@ -29,3 +29,19 @@ func TestSphereIntersectsAABBMiss(t *testing.T) {
 
 	assert.False(t, s.IntersectsAABB(a))
 }
+
+// Test a Sphere/Vector3 intersection hit
+func TestSphereIntersectsVector3Hit(t *testing.T) {
+	s := NewSphere(Vector3{0, 0, 0}, 1)
+	v := NewVector3(0.5, 0.5, 0.5)
+
+	assert.True(t, s.IntersectsVector3(v))
+}
+
+// Test a Sphere/Vector3 intersection miss
+func TestSphereIntersectsVector3Miss(t *testing.T) {
+	s := NewSphere(Vector3{0, 0, 0}, 1)
+	v := NewVector3(2, 2, 2)
+
+	assert.False(t, s.IntersectsVector3(v))
+}
