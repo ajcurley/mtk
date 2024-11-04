@@ -395,6 +395,17 @@ func (m *HEMesh) GetPatch(id int) HEPatch {
 	return m.patches[id]
 }
 
+// Get the list of patch names
+func (m *HEMesh) GetPatchNames() []string {
+	names := make([]string, m.GetNumberOfPatches())
+
+	for i, patch := range m.patches {
+		names[i] = patch.Name
+	}
+
+	return names
+}
+
 // Get the faces assigned to the patch by ID
 func (m *HEMesh) GetPatchFaces(id int) []int {
 	faces := make([]int, 0)
