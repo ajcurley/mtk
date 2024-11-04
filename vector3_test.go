@@ -152,7 +152,7 @@ func TestVector3Cross(t *testing.T) {
 // Test an AABB/Vector3 intersection hit
 func TestVector3IntersectsAABBHit(t *testing.T) {
 	v := Vector3{1, 1, 1}
-	a := AABB{Min: Vector3{0, 0, 0}, Max: Vector3{2, 2, 2}}
+	a := NewAABB(Vector3{1, 1, 1}, Vector3{1, 1, 1})
 
 	assert.True(t, v.IntersectsAABB(a))
 }
@@ -160,7 +160,7 @@ func TestVector3IntersectsAABBHit(t *testing.T) {
 // Test an AABB/Vector3 intersection miss
 func TestVector3IntersectsAABBMiss(t *testing.T) {
 	v := Vector3{4, 4, 4}
-	a := AABB{Min: Vector3{0, 0, 0}, Max: Vector3{2, 2, 2}}
+	a := NewAABB(Vector3{1, 1, 1}, Vector3{1, 1, 1})
 
 	assert.False(t, v.IntersectsAABB(a))
 }

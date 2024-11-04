@@ -5,17 +5,32 @@ import (
 )
 
 // Three dimensional Cartesian triangle
-type Triangle [3]Vector3
+// type Triangle [3]Vector3
+type Triangle struct {
+	P  Vector3
+	Q  Vector3
+	R  Vector3
+	E0 Vector3
+	E1 Vector3
+	E2 Vector3
+}
 
 // Construct a Triangle from its points
 func NewTriangle(p, q, r Vector3) Triangle {
-	return Triangle{p, q, r}
+	return Triangle{
+		P:  p,
+		Q:  q,
+		R:  r,
+		E0: q.Sub(p),
+		E1: r.Sub(q),
+		E2: p.Sub(r),
+	}
 }
 
 // Get the normal vector (not necessarily a unit vector)
 func (t Triangle) Normal() Vector3 {
-	pq := t[1].Sub(t[0])
-	pr := t[2].Sub(t[0])
+	pq := t.Q.Sub(t.P)
+	pr := t.R.Sub(t.P)
 	return pq.Cross(pr)
 }
 
@@ -26,31 +41,32 @@ func (t Triangle) UnitNormal() Vector3 {
 
 // Get the area
 func (t Triangle) Area() float64 {
-	pq := t[1].Sub(t[0])
-	pr := t[2].Sub(t[0])
-	return 0.5 * pq.Cross(pr).Mag()
+	return 0.5 * t.Normal().Mag()
+}
+
+// Check for an intersection with a Ray
+func (t Triangle) IntersectsRay(r Ray) bool {
+	return r.IntersectsTriangle(t)
 }
 
 // Check for an intersection with an AABB
 func (t Triangle) IntersectsAABB(a AABB) bool {
 	// Shift the system such that the AABB is centered at the origin
-	halfSize := a.HalfSize()
-	center := a.Center()
-	v0 := t[0].Sub(center)
-	v1 := t[1].Sub(center)
-	v2 := t[2].Sub(center)
+	v0 := t.P.Sub(a.Center)
+	v1 := t.Q.Sub(a.Center)
+	v2 := t.R.Sub(a.Center)
 
 	// Compute the triangle edges
-	e0 := v1.Sub(v0)
-	e1 := v2.Sub(v1)
-	e2 := v0.Sub(v2)
+	e0 := t.E0
+	e1 := t.E1
+	e2 := t.E2
 
 	// Bullet #1 - Test the AABB against the minimum AABB of the triangle
 	for i := 0; i < 3; i++ {
 		vMin := min(v0[i], v1[i], v2[i])
 		vMax := max(v0[i], v1[i], v2[i])
 
-		if vMin > halfSize[i] || vMax < -halfSize[i] {
+		if vMin > a.HalfSize[i] || vMax < -a.HalfSize[i] {
 			return false
 		}
 	}
@@ -58,7 +74,7 @@ func (t Triangle) IntersectsAABB(a AABB) bool {
 	// Bullet #2 - Test the triangle plane against the AABB
 	normal := e0.Cross(e1)
 
-	if !planeBoxOverlap(normal, v0, halfSize) {
+	if !planeBoxOverlap(normal, v0, a.HalfSize) {
 		return false
 	}
 
@@ -68,15 +84,15 @@ func (t Triangle) IntersectsAABB(a AABB) bool {
 	fey = math.Abs(e0[1])
 	fez = math.Abs(e0[2])
 
-	if !axisTestX01(e0[2], e0[1], fez, fey, v0, v2, halfSize) {
+	if !axisTestX01(e0[2], e0[1], fez, fey, v0, v2, a.HalfSize) {
 		return false
 	}
 
-	if !axisTestY02(e0[2], e0[0], fez, fex, v0, v2, halfSize) {
+	if !axisTestY02(e0[2], e0[0], fez, fex, v0, v2, a.HalfSize) {
 		return false
 	}
 
-	if !axisTestZ12(e0[1], e0[0], fey, fex, v1, v2, halfSize) {
+	if !axisTestZ12(e0[1], e0[0], fey, fex, v1, v2, a.HalfSize) {
 		return false
 	}
 
@@ -84,15 +100,15 @@ func (t Triangle) IntersectsAABB(a AABB) bool {
 	fey = math.Abs(e1[1])
 	fez = math.Abs(e1[2])
 
-	if !axisTestX01(e1[2], e1[1], fez, fey, v0, v2, halfSize) {
+	if !axisTestX01(e1[2], e1[1], fez, fey, v0, v2, a.HalfSize) {
 		return false
 	}
 
-	if !axisTestY02(e1[2], e1[0], fez, fex, v0, v2, halfSize) {
+	if !axisTestY02(e1[2], e1[0], fez, fex, v0, v2, a.HalfSize) {
 		return false
 	}
 
-	if !axisTestZ0(e1[1], e1[0], fey, fex, v0, v1, halfSize) {
+	if !axisTestZ0(e1[1], e1[0], fey, fex, v0, v1, a.HalfSize) {
 		return false
 	}
 
@@ -100,15 +116,15 @@ func (t Triangle) IntersectsAABB(a AABB) bool {
 	fey = math.Abs(e2[1])
 	fez = math.Abs(e2[2])
 
-	if !axisTestX2(e2[2], e2[1], fez, fey, v0, v1, halfSize) {
+	if !axisTestX2(e2[2], e2[1], fez, fey, v0, v1, a.HalfSize) {
 		return false
 	}
 
-	if !axisTestY1(e2[2], e2[0], fez, fex, v0, v1, halfSize) {
+	if !axisTestY1(e2[2], e2[0], fez, fex, v0, v1, a.HalfSize) {
 		return false
 	}
 
-	if !axisTestZ12(e2[1], e2[0], fey, fex, v1, v2, halfSize) {
+	if !axisTestZ12(e2[1], e2[0], fey, fex, v1, v2, a.HalfSize) {
 		return false
 	}
 

@@ -7,7 +7,7 @@ import (
 
 const (
 	OctreeMaxDepth        int = 21
-	OctreeMaxItemsPerNode int = 5000
+	OctreeMaxItemsPerNode int = 100
 )
 
 // Linear octree implementation
@@ -36,23 +36,22 @@ func (o *Octree) GetItem(id int) IntersectsAABB {
 
 // Insert an item into the octree
 func (o *Octree) Insert(item IntersectsAABB) (int, bool) {
+	var code uint64
 	index := len(o.items)
 	queue := []uint64{1}
 	codes := make([]uint64, 0)
 
 	for len(queue) > 0 {
-		code := queue[0]
-		queue = queue[1:]
+		code, queue = queue[0], queue[1:]
+		node := o.nodes[code]
 
-		if node, ok := o.nodes[code]; ok {
-			if item.IntersectsAABB(node.bounds) {
-				if node.isLeaf {
-					node.items = append(node.items, index)
-					codes = append(codes, code)
-				} else {
-					childrenCodes := node.childrenCodes()
-					queue = append(queue, childrenCodes...)
-				}
+		if item.IntersectsAABB(node.bounds) {
+			if node.isLeaf {
+				node.items = append(node.items, index)
+				codes = append(codes, code)
+			} else {
+				childrenCodes := node.childrenCodes()
+				queue = append(queue, childrenCodes...)
 			}
 		}
 	}
@@ -96,8 +95,7 @@ func (o *Octree) Split(code uint64) {
 // Query the octree for intersecting items
 func (o *Octree) Query(query IntersectsAABB) []int {
 	var code uint64
-	cache := make([]bool, o.GetNumberOfItems())
-	items := make([]int, 0)
+	items := make(map[int]struct{})
 	queue := []uint64{1}
 
 	for len(queue) > 0 {
@@ -107,7 +105,7 @@ func (o *Octree) Query(query IntersectsAABB) []int {
 		if query.IntersectsAABB(node.bounds) {
 			if node.isLeaf {
 				for _, index := range node.items {
-					if !cache[index] {
+					if _, ok := items[index]; !ok {
 						var intersects bool
 
 						switch value := query.(type) {
@@ -146,8 +144,7 @@ func (o *Octree) Query(query IntersectsAABB) []int {
 						}
 
 						if intersects {
-							cache[index] = true
-							items = append(items, index)
+							items[index] = struct{}{}
 						}
 					}
 				}
@@ -158,7 +155,13 @@ func (o *Octree) Query(query IntersectsAABB) []int {
 		}
 	}
 
-	return items
+	results := make([]int, 0, len(items))
+
+	for index := range items {
+		results = append(results, index)
+	}
+
+	return results
 }
 
 // Query the octree for many intersecting items in parallel using the available

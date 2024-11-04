@@ -2,59 +2,57 @@ package mtk
 
 // Three dimensional Cartesian axis-aligned bounding box
 type AABB struct {
-	Min Vector3
-	Max Vector3
+	Center   Vector3
+	HalfSize Vector3
 }
 
 // Construct an AABB from its min/max bounds
-func NewAABB(minBound, maxBound Vector3) AABB {
-	return AABB{Min: minBound, Max: maxBound}
+func NewAABB(center, halfSize Vector3) AABB {
+	return AABB{Center: center, HalfSize: halfSize}
 }
 
-// Get the center
-func (a AABB) Center() Vector3 {
-	return a.Max.Add(a.Min).MulScalar(0.5)
+// Get the min bounds
+func (a AABB) Min() Vector3 {
+	return a.Center.Sub(a.HalfSize)
 }
 
-// Get the size vector
-func (a AABB) Size() Vector3 {
-	return a.Max.Sub(a.Min)
-}
-
-// Get the halfsize vector
-func (a AABB) HalfSize() Vector3 {
-	return a.Size().MulScalar(0.5)
+// Get the max bound
+func (a AABB) Max() Vector3 {
+	return a.Center.Add(a.HalfSize)
 }
 
 // Get the AABB representing the octant
 func (a AABB) Octant(octant int) AABB {
-	halfSize := a.HalfSize()
-	minBound := a.Min
+	center := a.Center
+	halfSize := a.HalfSize.MulScalar(0.5)
 
 	if octant&4 != 0 {
-		minBound[0] += halfSize[0]
+		center[0] += halfSize[0]
+	} else {
+		center[0] -= halfSize[0]
 	}
 
 	if octant&2 != 0 {
-		minBound[1] += halfSize[1]
+		center[1] += halfSize[1]
+	} else {
+		center[1] -= halfSize[1]
 	}
 
 	if octant&1 != 0 {
-		minBound[2] += halfSize[2]
+		center[2] += halfSize[2]
+	} else {
+		center[2] -= halfSize[2]
 	}
 
-	return AABB{
-		Min: minBound,
-		Max: minBound.Add(halfSize),
-	}
+	return NewAABB(center, halfSize)
 }
 
 // Check for an intersection with an AABB
 func (a AABB) IntersectsAABB(b AABB) bool {
-	return a.Min[0] <= b.Max[0] &&
-		a.Max[0] >= b.Min[0] &&
-		a.Min[1] <= b.Max[1] &&
-		a.Max[1] >= b.Min[1] &&
-		a.Min[2] <= b.Max[2] &&
-		a.Max[2] >= b.Min[2]
+	return a.Center[0]-a.HalfSize[0] <= b.Center[0]+b.HalfSize[0] &&
+		a.Center[0]+a.HalfSize[0] >= b.Center[0]-b.HalfSize[0] &&
+		a.Center[1]-a.HalfSize[1] <= b.Center[1]+b.HalfSize[1] &&
+		a.Center[1]+a.HalfSize[1] >= b.Center[1]-b.HalfSize[1] &&
+		a.Center[2]-a.HalfSize[2] <= b.Center[2]+b.HalfSize[2] &&
+		a.Center[2]+a.HalfSize[2] >= b.Center[2]-b.HalfSize[2]
 }

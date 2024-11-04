@@ -13,10 +13,10 @@ func TestRayAABBIntersectsHit(t *testing.T) {
 		Direction: Vector3{1, 0, 0},
 	}
 
-	aabb := AABB{
-		Min: Vector3{0, 0, 0},
-		Max: Vector3{1, 1, 1},
-	}
+	aabb := NewAABB(
+		Vector3{0.5, 0.5, 0.5},
+		Vector3{0.5, 0.5, 0.5},
+	)
 
 	assert.True(t, ray.IntersectsAABB(aabb))
 }
@@ -28,10 +28,10 @@ func TestRayAABBIntersectsMiss(t *testing.T) {
 		Direction: Vector3{1, 0, 0},
 	}
 
-	aabb := AABB{
-		Min: Vector3{0, 0, 0},
-		Max: Vector3{1, 1, 1},
-	}
+	aabb := NewAABB(
+		Vector3{0.5, 0.5, 0.5},
+		Vector3{0.5, 0.5, 0.5},
+	)
 
 	assert.False(t, ray.IntersectsAABB(aabb))
 }
@@ -43,11 +43,11 @@ func TestRayTriangleIntersectsHit(t *testing.T) {
 		Direction: Vector3{0, 0, 1},
 	}
 
-	triangle := Triangle{
+	triangle := NewTriangle(
 		Vector3{0, 0, 1},
 		Vector3{0, 1, 1},
 		Vector3{1, 0, 1},
-	}
+	)
 
 	assert.True(t, ray.IntersectsTriangle(triangle))
 }
@@ -59,11 +59,11 @@ func TestRayTriangleIntersectsCulled(t *testing.T) {
 		Direction: Vector3{0, 0, 1},
 	}
 
-	triangle := Triangle{
+	triangle := NewTriangle(
 		Vector3{0, 0, 1},
 		Vector3{1, 0, 1},
 		Vector3{0, 1, 1},
-	}
+	)
 
 	assert.False(t, ray.IntersectsTriangle(triangle))
 }
@@ -75,11 +75,11 @@ func TestRayTriangleIntersectsMiss(t *testing.T) {
 		Direction: Vector3{0, 0, 1},
 	}
 
-	triangle := Triangle{
+	triangle := NewTriangle(
 		Vector3{0, 0, 1},
 		Vector3{0, 1, 1},
 		Vector3{1, 0, 1},
-	}
+	)
 
 	assert.False(t, ray.IntersectsTriangle(triangle))
 }

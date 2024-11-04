@@ -81,8 +81,8 @@ func TestHEMeshGetBounds(t *testing.T) {
 
 	aabb := mesh.GetBounds()
 
-	assert.Equal(t, aabb.Min, Vector3{-0.5, -0.5, -0.5})
-	assert.Equal(t, aabb.Max, Vector3{0.5, 0.5, 0.5})
+	assert.Equal(t, aabb.Min(), Vector3{-0.5, -0.5, -0.5})
+	assert.Equal(t, aabb.Max(), Vector3{0.5, 0.5, 0.5})
 }
 
 // Test for the vertex neighbors of a consistently oriented mesh

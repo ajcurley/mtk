@@ -141,10 +141,10 @@ func (v Vector3) AngleTo(u Vector3) float64 {
 
 // Check for an intersection with an AABB
 func (v Vector3) IntersectsAABB(a AABB) bool {
-	return v[0] >= a.Min[0] &&
-		v[0] <= a.Max[0] &&
-		v[1] >= a.Min[1] &&
-		v[1] <= a.Max[1] &&
-		v[2] >= a.Min[2] &&
-		v[2] <= a.Max[2]
+	return v[0] >= a.Center[0]-a.HalfSize[0] &&
+		v[0] <= a.Center[0]+a.HalfSize[0] &&
+		v[1] >= a.Center[1]-a.HalfSize[1] &&
+		v[1] <= a.Center[1]+a.HalfSize[1] &&
+		v[2] >= a.Center[2]-a.HalfSize[2] &&
+		v[2] <= a.Center[2]+a.HalfSize[2]
 }

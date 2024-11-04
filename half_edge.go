@@ -141,22 +141,25 @@ func NewHEMeshFromOBJFile(path string) (*HEMesh, error) {
 
 // Compute the axis-aligned bounding box
 func (m *HEMesh) GetBounds() AABB {
-	minPosition := Vector3{1, 1, 1}.MulScalar(math.Inf(1))
-	maxPosition := Vector3{1, 1, 1}.MulScalar(math.Inf(-1))
+	minBound := Vector3{1, 1, 1}.MulScalar(math.Inf(1))
+	maxBound := Vector3{1, 1, 1}.MulScalar(math.Inf(-1))
 
 	for _, vertex := range m.vertices {
 		for i := 0; i < 3; i++ {
-			if vertex.Origin[i] < minPosition[i] {
-				minPosition[i] = vertex.Origin[i]
+			if vertex.Origin[i] < minBound[i] {
+				minBound[i] = vertex.Origin[i]
 			}
 
-			if vertex.Origin[i] > maxPosition[i] {
-				maxPosition[i] = vertex.Origin[i]
+			if vertex.Origin[i] > maxBound[i] {
+				maxBound[i] = vertex.Origin[i]
 			}
 		}
 	}
 
-	return AABB{Min: minPosition, Max: maxPosition}
+	center := maxBound.Add(minBound).MulScalar(0.5)
+	halfSize := maxBound.Sub(minBound).MulScalar(0.5)
+
+	return NewAABB(center, halfSize)
 }
 
 // Check if the half edge mesh is closed (no open boundaries)
