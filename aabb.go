@@ -56,3 +56,8 @@ func (a AABB) IntersectsAABB(b AABB) bool {
 		a.Center[2]-a.HalfSize[2] <= b.Center[2]+b.HalfSize[2] &&
 		a.Center[2]+a.HalfSize[2] >= b.Center[2]-b.HalfSize[2]
 }
+
+// Check for an intersection with a Sphere
+func (a AABB) IntersectsSphere(s Sphere) bool {
+	return s.IntersectsAABB(a)
+}

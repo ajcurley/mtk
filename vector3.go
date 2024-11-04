@@ -148,3 +148,8 @@ func (v Vector3) IntersectsAABB(a AABB) bool {
 		v[2] >= a.Center[2]-a.HalfSize[2] &&
 		v[2] <= a.Center[2]+a.HalfSize[2]
 }
+
+// Check for an intersection with a Sphere
+func (v Vector3) IntersectsSphere(s Sphere) bool {
+	return s.IntersectsVector3(v)
+}

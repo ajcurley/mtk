@@ -125,6 +125,14 @@ func (o *Octree) Query(query IntersectsAABB) []int {
 							if item, ok := o.items[index].(IntersectsRay); ok {
 								intersects = item.IntersectsRay(*value)
 							}
+						case Sphere:
+							if item, ok := o.items[index].(IntersectsSphere); ok {
+								intersects = item.IntersectsSphere(value)
+							}
+						case *Sphere:
+							if item, ok := o.items[index].(IntersectsSphere); ok {
+								intersects = item.IntersectsSphere(*value)
+							}
 						case Triangle:
 							if item, ok := o.items[index].(IntersectsTriangle); ok {
 								intersects = item.IntersectsTriangle(value)
