@@ -5,32 +5,17 @@ import (
 )
 
 // Three dimensional Cartesian triangle
-// type Triangle [3]Vector3
-type Triangle struct {
-	P  Vector3
-	Q  Vector3
-	R  Vector3
-	E0 Vector3
-	E1 Vector3
-	E2 Vector3
-}
+type Triangle [3]Vector3
 
 // Construct a Triangle from its points
 func NewTriangle(p, q, r Vector3) Triangle {
-	return Triangle{
-		P:  p,
-		Q:  q,
-		R:  r,
-		E0: q.Sub(p),
-		E1: r.Sub(q),
-		E2: p.Sub(r),
-	}
+	return Triangle{p, q, r}
 }
 
 // Get the normal vector (not necessarily a unit vector)
 func (t Triangle) Normal() Vector3 {
-	pq := t.Q.Sub(t.P)
-	pr := t.R.Sub(t.P)
+	pq := t[1].Sub(t[0])
+	pr := t[2].Sub(t[0])
 	return pq.Cross(pr)
 }
 
@@ -52,14 +37,14 @@ func (t Triangle) IntersectsRay(r Ray) bool {
 // Check for an intersection with an AABB
 func (t Triangle) IntersectsAABB(a AABB) bool {
 	// Shift the system such that the AABB is centered at the origin
-	v0 := t.P.Sub(a.Center)
-	v1 := t.Q.Sub(a.Center)
-	v2 := t.R.Sub(a.Center)
+	v0 := t[0].Sub(a.Center)
+	v1 := t[1].Sub(a.Center)
+	v2 := t[2].Sub(a.Center)
 
 	// Compute the triangle edges
-	e0 := t.E0
-	e1 := t.E1
-	e2 := t.E2
+	e0 := t[1].Sub(t[0])
+	e1 := t[2].Sub(t[1])
+	e2 := t[0].Sub(t[2])
 
 	// Bullet #1 - Test the AABB against the minimum AABB of the triangle
 	for i := 0; i < 3; i++ {

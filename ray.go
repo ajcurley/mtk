@@ -40,8 +40,8 @@ func (r Ray) IntersectsAABB(a AABB) bool {
 
 // Check for an intersection with a Triangle
 func (r Ray) IntersectsTriangle(t Triangle) bool {
-	e0 := t.Q.Sub(t.P)
-	e1 := t.R.Sub(t.P)
+	e0 := t[1].Sub(t[0])
+	e1 := t[2].Sub(t[0])
 
 	p := r.Direction.Cross(e1)
 	d := e0.Dot(p)
@@ -51,7 +51,7 @@ func (r Ray) IntersectsTriangle(t Triangle) bool {
 	}
 
 	dInv := 1. / d
-	s := r.Origin.Sub(t.P)
+	s := r.Origin.Sub(t[0])
 	u := dInv * s.Dot(p)
 
 	if u < 0. || u > 1. {
