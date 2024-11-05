@@ -63,7 +63,22 @@ func (a AABB) IntersectsAABB(b AABB) bool {
 		a.Center[2]+a.HalfSize[2] >= b.Center[2]-b.HalfSize[2]
 }
 
+// Check for an intersection with a Ray
+func (a AABB) IntersectsRay(r Ray) bool {
+	return r.IntersectsAABB(a)
+}
+
 // Check for an intersection with a Sphere
 func (a AABB) IntersectsSphere(s Sphere) bool {
 	return s.IntersectsAABB(a)
+}
+
+// Check for an intersection with a Triangle
+func (a AABB) IntersectsTriangle(t Triangle) bool {
+	return t.IntersectsAABB(a)
+}
+
+// Check for an intersection with a Vector3
+func (a AABB) IntersectsVector3(v Vector3) bool {
+	return v.IntersectsAABB(a)
 }
