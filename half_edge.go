@@ -659,36 +659,52 @@ func (m *HEMesh) ExtractPatchNames(names []string) (*HEMesh, error) {
 	return m.ExtractPatches(patches)
 }
 
-// Merge any vertices within the specified tolerance to remove duplicate
-// vertices from the mesh. This may result in a non-manifold mesh.
-func (m *HEMesh) MergeVertices(tol float64) error {
-	bounds := m.GetBounds().Buffer(tol)
+// Zip open edges by merging vertices within the geometric tolerance and
+// are on edges without a twin.
+func (m *HEMesh) ZipEdges() error {
+	bounds := m.GetBounds().Buffer(GeometricTolerance)
 	octree := NewOctree(bounds)
 
-	vertexLookup := make(map[int]int)
+	if !m.IsConsistent() {
+		m.Orient()
+	}
+
 	vertices := make([]HEVertex, 0)
+	indexLookup := make(map[int]int)
+	vertexLookup := make(map[int]int)
 
 	for i, vertex := range m.vertices {
-		query := NewSphere(vertex.Origin, tol)
-		duplicates := octree.Query(query)
+		if m.IsVertexOnBoundary(i) {
+			query := NewSphere(vertex.Origin, GeometricTolerance)
+			duplicates := octree.Query(query)
 
-		if len(duplicates) > 0 {
-			vertexLookup[i] = slices.Min(duplicates)
+			if len(duplicates) > 0 {
+				index := slices.Min(duplicates)
+				vertexLookup[i] = indexLookup[index]
+			} else {
+				indexLookup[octree.GetNumberOfItems()] = i
+				vertexLookup[i] = len(vertices)
+				vertices = append(vertices, vertex)
+				octree.Insert(vertex.Origin)
+			}
 		} else {
 			vertexLookup[i] = len(vertices)
 			vertices = append(vertices, vertex)
-			octree.Insert(vertex.Origin)
 		}
 	}
 
+	// Update the vertices
+	m.vertices = vertices
+
+	// Update the half edges to reference the condensed vertices
 	for i, halfEdge := range m.halfEdges {
 		halfEdge.Origin = vertexLookup[halfEdge.Origin]
 		m.halfEdges[i] = halfEdge
 	}
 
-	m.vertices = vertices
-
-	// Check for non-manifold edges
+	// Update the half edge twins by indexing the sorted pair of
+	// vertices defining the edge. If there are more than two edges
+	// indexed together, the mesh is non-manifold.
 	sharedEdges := make(map[[2]int][]int)
 
 	for i, halfEdge := range m.halfEdges {
@@ -698,15 +714,25 @@ func (m *HEMesh) MergeVertices(tol float64) error {
 
 		if shared, ok := sharedEdges[key]; ok {
 			if len(shared) == 2 {
-				vi := m.vertices[ki]
-				vn := m.vertices[kn]
-				near := vi.Origin.Add(vn.Origin).MulScalar(0.5)
-				return fmt.Errorf("%v: near %v", ErrNonManifoldMesh, near)
+				vi := m.vertices[ki].Origin
+				vn := m.vertices[kn].Origin
+				loc := vi.Add(vn).MulScalar(0.5)
+				return fmt.Errorf("%v: near %v", ErrNonManifoldMesh, loc)
 			}
 
 			sharedEdges[key] = append(shared, i)
 		} else {
 			sharedEdges[key] = []int{i}
+		}
+	}
+
+	for _, shared := range sharedEdges {
+		if len(shared) == 2 {
+			for i := range shared {
+				halfEdge := m.halfEdges[shared[i]]
+				halfEdge.Twin = shared[(i+1)%2]
+				m.halfEdges[shared[i]] = halfEdge
+			}
 		}
 	}
 

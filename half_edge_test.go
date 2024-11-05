@@ -273,23 +273,28 @@ func TestHEMeshExtractPatchNames(t *testing.T) {
 	assert.Equal(t, 10, subset.GetNumberOfHalfEdges())
 }
 
-// Test merging duplicate vertices for a mesh with some duplication
-func TestHEMeshMergeVerticesPartial(t *testing.T) {
+// Test zipping edges for a mesh with some open and some closed edges
+func TestHEMeshMergeZipEdgesPartial(t *testing.T) {
 	path := "testdata/box.duplicates-partial.obj"
 	mesh, _ := NewHEMeshFromOBJFile(path)
 
-	err := mesh.MergeVertices(1e-8)
+	assert.Equal(t, 22, mesh.GetNumberOfVertices())
+	assert.False(t, mesh.IsClosed())
+
+	err := mesh.ZipEdges()
 
 	assert.Empty(t, err)
 	assert.Equal(t, 8, mesh.GetNumberOfVertices())
+	assert.True(t, mesh.IsConsistent())
+	assert.True(t, mesh.IsClosed())
 }
 
-// Test merging duplicate vertices resulting in a non-manifold mesh
-func TestHEMeshMergeVerticesNonManifold(t *testing.T) {
+// Test zipping edges for a mesh that results in a non-manifold edge
+func TestHEMeshMergeZipEdgesNonManifold(t *testing.T) {
 	path := "testdata/box.duplicates-nonmanifold.obj"
 	mesh, _ := NewHEMeshFromOBJFile(path)
 
-	err := mesh.MergeVertices(1e-8)
+	err := mesh.ZipEdges()
 
 	assert.ErrorContains(t, err, "non-manifold mesh: near [0 0 0.5]")
 }
