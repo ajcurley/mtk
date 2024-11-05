@@ -99,7 +99,7 @@ func main() {
 }
 ```
 
-**Example: Find all points within a radius***
+**Example: Find all points within a radius**
 ```go
 func findPointsInside(octree *mtk.Octree, loc Vector3) []Vector3 {
   // Given an octree indexing many Vector3 items, search for all points within
