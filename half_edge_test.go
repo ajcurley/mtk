@@ -291,5 +291,5 @@ func TestHEMeshMergeVerticesNonManifold(t *testing.T) {
 
 	err := mesh.MergeVertices(1e-8)
 
-	assert.Errorf(t, err, "non-manifold mesh: near [0, 0, 0]")
+	assert.ErrorContains(t, err, "non-manifold mesh: near [0 0 0.5]")
 }

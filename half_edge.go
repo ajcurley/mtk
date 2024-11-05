@@ -698,8 +698,10 @@ func (m *HEMesh) MergeVertices(tol float64) error {
 
 		if shared, ok := sharedEdges[key]; ok {
 			if len(shared) == 2 {
-				vertex := m.vertices[ki]
-				return fmt.Errorf("%v: near %v", ErrNonManifoldMesh, vertex.Origin)
+				vi := m.vertices[ki]
+				vn := m.vertices[kn]
+				near := vi.Origin.Add(vn.Origin).MulScalar(0.5)
+				return fmt.Errorf("%v: near %v", ErrNonManifoldMesh, near)
 			}
 
 			sharedEdges[key] = append(shared, i)
