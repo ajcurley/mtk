@@ -1,6 +1,9 @@
 test:
 	@go test ./...
 
+test_ci:
+	@go test -v ./...
+
 fmt:
 	@go fmt ./...
 

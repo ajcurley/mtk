@@ -22,4 +22,4 @@ jobs:
         go-version: ${{ matrix.go-version }}
 
     - name: Run Unit Tests
-      run: make test
+      run: make test_ci
