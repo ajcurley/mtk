@@ -273,8 +273,8 @@ func TestHEMeshExtractPatchNames(t *testing.T) {
 	assert.Equal(t, 10, subset.GetNumberOfHalfEdges())
 }
 
-// Test merging duplicate vertices
-func TestHEMeshMergeVertices(t *testing.T) {
+// Test merging duplicate vertices for a mesh with some duplication
+func TestHEMeshMergeVerticesPartial(t *testing.T) {
 	path := "testdata/box.duplicates-partial.obj"
 	mesh, _ := NewHEMeshFromOBJFile(path)
 
@@ -284,6 +284,7 @@ func TestHEMeshMergeVertices(t *testing.T) {
 	assert.Equal(t, 8, mesh.GetNumberOfVertices())
 }
 
+// Test merging duplicate vertices resulting in a non-manifold mesh
 func TestHEMeshMergeVerticesNonManifold(t *testing.T) {
 	path := "testdata/box.duplicates-nonmanifold.obj"
 	mesh, _ := NewHEMeshFromOBJFile(path)
