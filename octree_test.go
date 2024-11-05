@@ -1,7 +1,6 @@
 package mtk
 
 import (
-	"math/rand/v2"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -25,17 +24,18 @@ func TestOctreeSplit(t *testing.T) {
 func TestOctreeInsert(t *testing.T) {
 	bounds := NewAABB(Vector3{0.5, 0.5, 0.5}, Vector3{0.5, 0.5, 0.5})
 	octree := NewOctree(bounds)
+	count := OctreeMaxItemsPerNode + 1
 
-	for i := 0; i < OctreeMaxItemsPerNode+1; i++ {
+	for i := 0; i < count; i++ {
 		point := Vector3{
-			rand.Float64(),
-			rand.Float64(),
-			rand.Float64(),
+			float64(i) / float64(count),
+			float64(i) / float64(count),
+			float64(i) / float64(count),
 		}
 		octree.Insert(point)
 	}
 
-	assert.Equal(t, OctreeMaxItemsPerNode+1, octree.GetNumberOfItems())
+	assert.Equal(t, count, octree.GetNumberOfItems())
 	assert.Equal(t, 9, len(octree.nodes))
 }
 
