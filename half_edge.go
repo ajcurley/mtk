@@ -3,11 +3,12 @@ package mtk
 import (
 	"compress/gzip"
 	"errors"
+	"fmt"
 	"io"
 	"math"
 	"os"
+	"slices"
 	"strings"
-	"fmt"
 )
 
 var (
@@ -658,11 +659,55 @@ func (m *HEMesh) ExtractPatchNames(names []string) (*HEMesh, error) {
 	return m.ExtractPatches(patches)
 }
 
-// Merge vertices of open edges with in a tolerance to remove duplicates
-// without generating non-manifold edges. This requires the mesh to be
-// consistently oriented.
+// Merge any vertices within the specified tolerance to remove duplicate
+// vertices from the mesh. This may result in a non-manifold mesh.
 func (m *HEMesh) MergeVertices(tol float64) error {
-	// TODO: implement
+	bounds := m.GetBounds().Buffer(tol)
+	octree := NewOctree(bounds)
+
+	vertexLookup := make(map[int]int)
+	vertices := make([]HEVertex, 0)
+
+	for i, vertex := range m.vertices {
+		query := NewSphere(vertex.Origin, tol)
+		duplicates := octree.Query(query)
+
+		if len(duplicates) > 0 {
+			vertexLookup[i] = slices.Min(duplicates)
+		} else {
+			vertexLookup[i] = len(vertices)
+			vertices = append(vertices, vertex)
+			octree.Insert(vertex.Origin)
+		}
+	}
+
+	for i, halfEdge := range m.halfEdges {
+		halfEdge.Origin = vertexLookup[halfEdge.Origin]
+		m.halfEdges[i] = halfEdge
+	}
+
+	m.vertices = vertices
+
+	// Check for non-manifold edges
+	sharedEdges := make(map[[2]int][]int)
+
+	for i, halfEdge := range m.halfEdges {
+		ki := halfEdge.Origin
+		kn := m.halfEdges[halfEdge.Next].Origin
+		key := [2]int{min(ki, kn), max(ki, kn)}
+
+		if shared, ok := sharedEdges[key]; ok {
+			if len(shared) == 2 {
+				vertex := m.vertices[ki]
+				return fmt.Errorf("%v: near %v", ErrNonManifoldMesh, vertex.Origin)
+			}
+
+			sharedEdges[key] = append(shared, i)
+		} else {
+			sharedEdges[key] = []int{i}
+		}
+	}
+
 	return nil
 }
 

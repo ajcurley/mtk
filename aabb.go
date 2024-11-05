@@ -21,6 +21,12 @@ func (a AABB) Max() Vector3 {
 	return a.Center.Add(a.HalfSize)
 }
 
+// Get the buffered AABB
+func (a AABB) Buffer(r float64) AABB {
+	halfSize := a.HalfSize.AddScalar(r)
+	return NewAABB(a.Center, halfSize)
+}
+
 // Get the AABB representing the octant
 func (a AABB) Octant(octant int) AABB {
 	center := a.Center

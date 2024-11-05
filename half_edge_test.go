@@ -275,11 +275,20 @@ func TestHEMeshExtractPatchNames(t *testing.T) {
 
 // Test merging duplicate vertices
 func TestHEMeshMergeVertices(t *testing.T) {
-	path := "testdata/box.obj"
-	path = "/Users/acurley/projects/cfd/geometry/car.obj.gz"
+	path := "testdata/box.duplicates-partial.obj"
 	mesh, _ := NewHEMeshFromOBJFile(path)
 
-	err := mesh.MergeVertices(1e-6)
+	err := mesh.MergeVertices(1e-8)
 
-	assert.False(t, err == nil)
+	assert.Empty(t, err)
+	assert.Equal(t, 8, mesh.GetNumberOfVertices())
+}
+
+func TestHEMeshMergeVerticesNonManifold(t *testing.T) {
+	path := "testdata/box.duplicates-nonmanifold.obj"
+	mesh, _ := NewHEMeshFromOBJFile(path)
+
+	err := mesh.MergeVertices(1e-8)
+
+	assert.Errorf(t, err, "non-manifold mesh: near [0, 0, 0]")
 }
