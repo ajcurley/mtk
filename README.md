@@ -1,5 +1,7 @@
 # Mesh Tool Kit (mtk)
-Mesh tool kit for polygonal mesh processing. Visit [pkg.go.dev](https://pkg.go.dev/github.com/ajcurley/mtk) for a more detailed documentation.
+Mesh tool kit for polygonal mesh processing.
+
+[![Go Reference](https://pkg.go.dev/badge/github.com/ajcurley/mtk.svg)](https://pkg.go.dev/github.com/ajcurley/mtk)
 
 ## Quickstart
 `mtk` is primarily intended for reading/writing polygonal surface meshes as well as performing minor modifications (like zipping open edges and orienting faces). Additionally, the library supports spatial indexing for fast retrieval of intersecting entities.
