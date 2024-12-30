@@ -478,6 +478,25 @@ func (m *HEMesh) GetComponents() [][]int {
 	return components
 }
 
+// Get the shared vertices between two faces.
+func (m *HEMesh) GetSharedVertices(i, j int) []Vector3 {
+	index := make(map[int]struct{})
+	vertices := make([]Vector3, 0)
+
+	for _, vertex := range m.GetFaceVertices(i) {
+		index[vertex] = struct{}{}
+	}
+
+	for _, vertex := range m.GetFaceVertices(j) {
+		if _, ok := index[vertex]; ok {
+			origin := m.GetVertex(vertex).Origin
+			vertices = append(vertices, origin)
+		}
+	}
+
+	return vertices
+}
+
 // Naively copy another half edge mesh into the current. This does not
 // merge any duplicate vertices or faces.
 func (m *HEMesh) Merge(other *HEMesh) {
