@@ -198,6 +198,16 @@ func TestHEMeshGetComponentsMultiple(t *testing.T) {
 	assert.Equal(t, 96, len(components[1]))
 }
 
+// Test getting the shared vertices between two faces
+func TestHEMeshGetSharedVertices(t *testing.T) {
+	path := "testdata/box.obj"
+	mesh, _ := NewHEMeshFromOBJFile(path)
+
+	shared := mesh.GetSharedVertices(0, 1)
+
+	assert.Equal(t, 2, len(shared))
+}
+
 // Test merging two meshes
 func TestHEMestMerge(t *testing.T) {
 	path := "testdata/box.obj"
