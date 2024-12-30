@@ -436,7 +436,7 @@ func (m *HEMesh) GetPatchFaces(id int) []int {
 	faces := make([]int, 0)
 
 	for i, face := range m.faces {
-		if face.Patch == i {
+		if face.Patch == id {
 			faces = append(faces, i)
 		}
 	}
