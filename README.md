@@ -27,10 +27,10 @@ func main() {
 
   // Print out a basic summary of the contents
   fmt.Printf("Mesh summary:\n")
-  fmt.Printf("Number of vertices:   %d", mesh.GetNumberOfVertices())
-  fmt.Printf("Number of faces:      %d", mesh.GetNumberOfFaces())
-  fmt.Printf("Number of half edges: %d", mesh.GetNumberOfHalfEdges())
-  fmt.Printf("Number of patches:    %d", mesh.GetNumberOfPatches())
+  fmt.Printf("Number of vertices:   %d", mesh.NumberOfVertices())
+  fmt.Printf("Number of faces:      %d", mesh.NumberOfFaces())
+  fmt.Printf("Number of half edges: %d", mesh.NumberOfHalfEdges())
+  fmt.Printf("Number of patches:    %d", mesh.NumberOfPatches())
 
   // Check if the mesh has any open edges
   if !mesh.IsClosed() {
@@ -75,12 +75,12 @@ func main() {
   mesh, _ := NewHEMeshFromOBJFile("./some_mesh.obj.gz")
 
   // Create the bounded octree
-  bounds := mesh.GetBounds()
+  bounds := mesh.Bounds()
   octree := NewOctree(bounds)
 
   // Insert each face into the octree
-  for i := 0; i < mesh.GetNumberOfFaces(); i++ {
-    vertices := mesh.GetFaceVertices(i)
+  for i := 0; i < mesh.NumberOfFaces(); i++ {
+    vertices := mesh.FaceVertices(i)
 
     // Check that the face is a triangle since the HEMesh supports polygon elements
     // but collision detection is only implemented for triangles.
@@ -111,7 +111,7 @@ func findPointsInside(octree *mtk.Octree, loc Vector3) []Vector3 {
 
   for i, index := range octree.Query(query) {
     // Cast the item to the appropriate type
-    if item, ok := octree.GetItem(index).(Vector3) {
+    if item, ok := octree.Item(index).(Vector3) {
       items = append(items, item)
     }
   }
