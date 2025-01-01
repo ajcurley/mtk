@@ -2,6 +2,8 @@ package mtk
 
 import (
 	"errors"
+	"math"
+	"slices"
 )
 
 var (
@@ -10,6 +12,7 @@ var (
 	ErrMatrixRow             = errors.New("matrix row out of range")
 	ErrMatrixColumn          = errors.New("matrix column out of range")
 	ErrMatrixSquareSymmetric = errors.New("matrix must be square and symmetric")
+	ErrMatrixSquare          = errors.New("matrix must be square")
 )
 
 // Two-dimensional matrix
@@ -39,6 +42,17 @@ func NewIdentityMatrix(size int) *Matrix {
 	}
 
 	return m
+}
+
+// Copy the matrix
+func (m *Matrix) Copy() *Matrix {
+	n := NewMatrix(m.shape[0], m.shape[1])
+
+	for i := 0; i < len(m.data); i++ {
+		n.data[i] = m.data[i]
+	}
+
+	return n
 }
 
 // Validate the (row, column) index
@@ -133,6 +147,21 @@ func (m *Matrix) IsSymmetric() bool {
 	return true
 }
 
+// Get the trace (diagonal) of the matrix
+func (m *Matrix) Trace() Vector {
+	if !m.IsSquare() {
+		panic(ErrMatrixSquare)
+	}
+
+	trace := NewVector(m.shape[0])
+
+	for i := 0; i < trace.Size(); i++ {
+		trace[i] = m.At(i, i)
+	}
+
+	return trace
+}
+
 // Compute the transpose of the matrix
 func (m *Matrix) Transpose() *Matrix {
 	n := NewMatrix(m.shape[1], m.shape[0])
@@ -149,17 +178,20 @@ func (m *Matrix) Transpose() *Matrix {
 
 // Compute the matrix multiplication m * n
 func (m *Matrix) Dot(n *Matrix) *Matrix {
-	if m.shape[1] != n.shape[0] {
+	mRows, mCols := m.shape[0], m.shape[1]
+	nRows, nCols := n.shape[0], n.shape[1]
+
+	if mCols != nRows {
 		panic(ErrMatrixShapeMismatch)
 	}
 
-	d := NewMatrix(m.shape[0], n.shape[1])
+	d := NewMatrix(mRows, nCols)
 
-	for i := 0; i < d.shape[0]; i++ {
-		for j := 0; j < d.shape[1]; j++ {
+	for i := 0; i < mRows; i++ {
+		for j := 0; j < nCols; j++ {
 			var value float64
 
-			for k := 0; k < n.shape[0]; i++ {
+			for k := 0; k < nRows; k++ {
 				value += m.At(i, k) * n.At(k, j)
 			}
 
@@ -188,6 +220,49 @@ func (m *Matrix) Covariance() *Matrix {
 	}
 
 	return result
+}
+
+// Compute the eigenvalue and eigenvector pairs for a real, symmetric
+// matrix using the QR iteration. The returned pairs are sorted in descending
+// order of the eigenvalue magnitude.
+func (m *Matrix) SymmetricEigen() (Vector, *Matrix) {
+	if !m.IsSquare() || !m.IsSymmetric() {
+		panic(ErrMatrixSquareSymmetric)
+	}
+
+	s := m.shape[0]
+	a := m.Copy()
+	qq := NewIdentityMatrix(m.shape[0])
+
+	for i := 0; i < 100; i++ {
+		q, r := a.QR()
+		a = r.Dot(q)
+		qq = qq.Dot(q)
+	}
+
+	index := make([]int, s)
+	trace := a.Trace()
+
+	for i := 0; i < s; i++ {
+		index[i] = i
+	}
+
+	slices.SortStableFunc(index, func(i, j int) int {
+		return -int(math.Abs(trace[i]) - math.Abs(trace[j]))
+	})
+
+	e := NewVector(s)
+	v := NewMatrix(s, s)
+
+	for j, k := range index {
+		e[j] = a.At(k, k)
+
+		for i := 0; i < s; i++ {
+			v.SetValue(i, j, qq.At(i, k))
+		}
+	}
+
+	return e, v
 }
 
 // Compute the QR decomposition of the matrix using the Gram-Schmidt process
