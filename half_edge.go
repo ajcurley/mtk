@@ -478,7 +478,7 @@ func (m *HEMesh) Components() [][]int {
 	return components
 }
 
-// the shared vertices between two faces.
+// Get the shared vertices between two faces.
 func (m *HEMesh) SharedVertices(i, j int) []Vector3 {
 	index := make(map[int]struct{})
 	vertices := make([]Vector3, 0)
