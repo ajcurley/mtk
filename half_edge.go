@@ -497,6 +497,33 @@ func (m *HEMesh) SharedVertices(i, j int) []Vector3 {
 	return vertices
 }
 
+// Get the half edge pairs with adjacent faces exceeding the angle
+// threshold (in radians) between face normals.
+func (m *HEMesh) FeatureEdges(threshold float64) [][2]int {
+	visited := make(map[int]struct{})
+	featureEdges := make([][2]int, 0)
+
+	for i, halfEdge := range m.halfEdges {
+		if _, ok := visited[i]; !ok {
+			visited[i] = struct{}{}
+
+			if !halfEdge.IsBoundary() {
+				visited[halfEdge.Twin] = struct{}{}
+				twin := m.halfEdges[halfEdge.Twin]
+
+				u := m.FaceNormal(halfEdge.Face)
+				v := m.FaceNormal(twin.Face)
+
+				if u.AngleTo(v) >= threshold {
+					featureEdges = append(featureEdges, [2]int{i, halfEdge.Twin})
+				}
+			}
+		}
+	}
+
+	return featureEdges
+}
+
 // Naively copy another half edge mesh into the current. This does not
 // merge any duplicate vertices or faces.
 func (m *HEMesh) Merge(other *HEMesh) {

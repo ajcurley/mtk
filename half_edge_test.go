@@ -2,6 +2,7 @@ package mtk
 
 import (
 	"errors"
+	"math"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -307,4 +308,15 @@ func TestHEMeshMergeZipEdgesNonManifold(t *testing.T) {
 	err := mesh.ZipEdges()
 
 	assert.ErrorContains(t, err, "non-manifold mesh: near [0 0 0.5]")
+}
+
+// Test computing the feature edges
+func TestHEMeshFeatureEdges(t *testing.T) {
+	path := "testdata/box.obj"
+	mesh, _ := NewHEMeshFromOBJFile(path)
+
+	threshold := math.Pi * 30. / 180.
+	featureEdges := mesh.FeatureEdges(threshold)
+
+	assert.Equal(t, 12, len(featureEdges))
 }
