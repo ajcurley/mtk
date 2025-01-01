@@ -13,9 +13,9 @@ func TestNewHEMeshFromOBJFile(t *testing.T) {
 	mesh, err := NewHEMeshFromOBJFile(path)
 
 	assert.Empty(t, err)
-	assert.Equal(t, 8, mesh.GetNumberOfVertices())
-	assert.Equal(t, 12, mesh.GetNumberOfFaces())
-	assert.Equal(t, 36, mesh.GetNumberOfHalfEdges())
+	assert.Equal(t, 8, mesh.NumberOfVertices())
+	assert.Equal(t, 12, mesh.NumberOfFaces())
+	assert.Equal(t, 36, mesh.NumberOfHalfEdges())
 }
 
 // Test reading from file with patches
@@ -24,14 +24,14 @@ func TestNewHEMeshFromOBJFilePatches(t *testing.T) {
 	mesh, err := NewHEMeshFromOBJFile(path)
 
 	assert.Empty(t, err)
-	assert.Equal(t, 6, mesh.GetNumberOfPatches())
-	assert.Equal(t, 0, mesh.GetFace(0).Patch)
-	assert.Equal(t, 1, mesh.GetFace(1).Patch)
-	assert.Equal(t, 1, mesh.GetFace(2).Patch)
-	assert.Equal(t, 2, mesh.GetFace(3).Patch)
-	assert.Equal(t, 3, mesh.GetFace(4).Patch)
-	assert.Equal(t, 4, mesh.GetFace(5).Patch)
-	assert.Equal(t, 5, mesh.GetFace(6).Patch)
+	assert.Equal(t, 6, mesh.NumberOfPatches())
+	assert.Equal(t, 0, mesh.Face(0).Patch)
+	assert.Equal(t, 1, mesh.Face(1).Patch)
+	assert.Equal(t, 1, mesh.Face(2).Patch)
+	assert.Equal(t, 2, mesh.Face(3).Patch)
+	assert.Equal(t, 3, mesh.Face(4).Patch)
+	assert.Equal(t, 4, mesh.Face(5).Patch)
+	assert.Equal(t, 5, mesh.Face(6).Patch)
 }
 
 // Test for a non-manifold mesh
@@ -75,22 +75,22 @@ func TestHEMeshIsConsistentFalse(t *testing.T) {
 }
 
 // Test computing the bounding box
-func TestHEMeshGetBounds(t *testing.T) {
+func TestHEMeshBounds(t *testing.T) {
 	path := "testdata/box.obj"
 	mesh, _ := NewHEMeshFromOBJFile(path)
 
-	aabb := mesh.GetBounds()
+	aabb := mesh.Bounds()
 
 	assert.Equal(t, aabb.Min(), Vector3{-0.5, -0.5, -0.5})
 	assert.Equal(t, aabb.Max(), Vector3{0.5, 0.5, 0.5})
 }
 
 // Test for the vertex neighbors of a consistently oriented mesh
-func TestHEMeshGetVertexNeighborsConsistent(t *testing.T) {
+func TestHEMeshVertexNeighborsConsistent(t *testing.T) {
 	path := "testdata/box.obj"
 	mesh, _ := NewHEMeshFromOBJFile(path)
 
-	neighbors := mesh.GetVertexNeighbors(1)
+	neighbors := mesh.VertexNeighbors(1)
 
 	assert.Equal(t, 5, len(neighbors))
 	assert.Equal(t, 5, neighbors[0])
@@ -101,11 +101,11 @@ func TestHEMeshGetVertexNeighborsConsistent(t *testing.T) {
 }
 
 // Test for the vertex neighbors of an inconsistently oriented mesh
-func TestHEMeshGetVertexNeighborsInconsistent(t *testing.T) {
+func TestHEMeshVertexNeighborsInconsistent(t *testing.T) {
 	path := "testdata/box.inconsistent.obj"
 	mesh, _ := NewHEMeshFromOBJFile(path)
 
-	neighbors := mesh.GetVertexNeighbors(1)
+	neighbors := mesh.VertexNeighbors(1)
 
 	assert.Equal(t, 5, len(neighbors))
 	assert.Equal(t, 3, neighbors[0])
@@ -116,11 +116,11 @@ func TestHEMeshGetVertexNeighborsInconsistent(t *testing.T) {
 }
 
 // Test for the vertex faces of a consistently oriented mesh
-func TestHEMeshGetVertexFacesConsistent(t *testing.T) {
+func TestHEMeshVertexFacesConsistent(t *testing.T) {
 	path := "testdata/box.obj"
 	mesh, _ := NewHEMeshFromOBJFile(path)
 
-	faces := mesh.GetVertexFaces(1)
+	faces := mesh.VertexFaces(1)
 
 	assert.Equal(t, 5, len(faces))
 	assert.Equal(t, 10, faces[0])
@@ -131,11 +131,11 @@ func TestHEMeshGetVertexFacesConsistent(t *testing.T) {
 }
 
 // Test for the vertex faces of an inconsistently oriented mesh
-func TestHEMeshGetVertexFacesInconsistent(t *testing.T) {
+func TestHEMeshVertexFacesInconsistent(t *testing.T) {
 	path := "testdata/box.inconsistent.obj"
 	mesh, _ := NewHEMeshFromOBJFile(path)
 
-	faces := mesh.GetVertexFaces(1)
+	faces := mesh.VertexFaces(1)
 
 	assert.Equal(t, 5, len(faces))
 	assert.Equal(t, 10, faces[0])
@@ -146,11 +146,11 @@ func TestHEMeshGetVertexFacesInconsistent(t *testing.T) {
 }
 
 // Test for the face vertices
-func TestHEMeshGetFaceVertices(t *testing.T) {
+func TestHEMeshFaceVertices(t *testing.T) {
 	path := "testdata/box.obj"
 	mesh, _ := NewHEMeshFromOBJFile(path)
 
-	vertices := mesh.GetFaceVertices(1)
+	vertices := mesh.FaceVertices(1)
 
 	assert.Equal(t, 3, len(vertices))
 	assert.Equal(t, vertices[0], 1)
@@ -159,11 +159,11 @@ func TestHEMeshGetFaceVertices(t *testing.T) {
 }
 
 // Test for the face neighbors
-func TestHEMeshGetFaceNeighbors(t *testing.T) {
+func TestHEMeshFaceNeighbors(t *testing.T) {
 	path := "testdata/box.obj"
 	mesh, _ := NewHEMeshFromOBJFile(path)
 
-	neighbors := mesh.GetFaceNeighbors(1)
+	neighbors := mesh.FaceNeighbors(1)
 
 	assert.Equal(t, 3, len(neighbors))
 	assert.Equal(t, 10, neighbors[0])
@@ -172,18 +172,18 @@ func TestHEMeshGetFaceNeighbors(t *testing.T) {
 }
 
 // Test for the distinct components for a single element mesh
-func TestHEMeshGetComponentsSingle(t *testing.T) {
+func TestHEMeshComponentsSingle(t *testing.T) {
 	path := "testdata/box.obj"
 	mesh, _ := NewHEMeshFromOBJFile(path)
 
-	components := mesh.GetComponents()
+	components := mesh.Components()
 
 	assert.Equal(t, 1, len(components))
-	assert.Equal(t, mesh.GetNumberOfFaces(), len(components[0]))
+	assert.Equal(t, mesh.NumberOfFaces(), len(components[0]))
 }
 
 // Test for the distinct components for a multiple element mesh
-func TestHEMeshGetComponentsMultiple(t *testing.T) {
+func TestHEMeshComponentsMultiple(t *testing.T) {
 	boxPath := "testdata/box.obj"
 	mesh, _ := NewHEMeshFromOBJFile(boxPath)
 
@@ -191,7 +191,7 @@ func TestHEMeshGetComponentsMultiple(t *testing.T) {
 	meshSphere, _ := NewHEMeshFromOBJFile(spherePath)
 
 	mesh.Merge(meshSphere)
-	components := mesh.GetComponents()
+	components := mesh.Components()
 
 	assert.Equal(t, 2, len(components))
 	assert.Equal(t, 12, len(components[0]))
@@ -199,11 +199,11 @@ func TestHEMeshGetComponentsMultiple(t *testing.T) {
 }
 
 // Test getting the shared vertices between two faces
-func TestHEMeshGetSharedVertices(t *testing.T) {
+func TestHEMeshSharedVertices(t *testing.T) {
 	path := "testdata/box.obj"
 	mesh, _ := NewHEMeshFromOBJFile(path)
 
-	shared := mesh.GetSharedVertices(0, 1)
+	shared := mesh.SharedVertices(0, 1)
 
 	assert.Equal(t, 2, len(shared))
 }
@@ -216,9 +216,9 @@ func TestHEMestMerge(t *testing.T) {
 
 	mesh.Merge(other)
 
-	assert.Equal(t, 16, mesh.GetNumberOfVertices())
-	assert.Equal(t, 24, mesh.GetNumberOfFaces())
-	assert.Equal(t, 72, mesh.GetNumberOfHalfEdges())
+	assert.Equal(t, 16, mesh.NumberOfVertices())
+	assert.Equal(t, 24, mesh.NumberOfFaces())
+	assert.Equal(t, 72, mesh.NumberOfHalfEdges())
 	assert.True(t, mesh.IsClosed())
 	assert.True(t, mesh.IsConsistent())
 }
@@ -248,11 +248,11 @@ func TestHEMeshOrientInconsistent(t *testing.T) {
 }
 
 // Test for a face normal
-func TestHEMeshGetFaceNormal(t *testing.T) {
+func TestHEMeshFaceNormal(t *testing.T) {
 	path := "testdata/box.obj"
 	mesh, _ := NewHEMeshFromOBJFile(path)
 
-	normal := mesh.GetFaceNormal(0)
+	normal := mesh.FaceNormal(0)
 
 	assert.Equal(t, Vector3{-1, 0, 0}, normal)
 }
@@ -265,9 +265,9 @@ func TestHEMeshExtractFaces(t *testing.T) {
 	subset, err := mesh.ExtractFaces([]int{0, 1, 7})
 
 	assert.Empty(t, err)
-	assert.Equal(t, 6, subset.GetNumberOfVertices())
-	assert.Equal(t, 3, subset.GetNumberOfFaces())
-	assert.Equal(t, 9, subset.GetNumberOfHalfEdges())
+	assert.Equal(t, 6, subset.NumberOfVertices())
+	assert.Equal(t, 3, subset.NumberOfFaces())
+	assert.Equal(t, 9, subset.NumberOfHalfEdges())
 }
 
 // Test extract patch names from a mesh
@@ -278,9 +278,9 @@ func TestHEMeshExtractPatchNames(t *testing.T) {
 	subset, err := mesh.ExtractPatchNames([]string{"bottom", "back"})
 
 	assert.Empty(t, err)
-	assert.Equal(t, 6, subset.GetNumberOfVertices())
-	assert.Equal(t, 3, subset.GetNumberOfFaces())
-	assert.Equal(t, 10, subset.GetNumberOfHalfEdges())
+	assert.Equal(t, 6, subset.NumberOfVertices())
+	assert.Equal(t, 3, subset.NumberOfFaces())
+	assert.Equal(t, 10, subset.NumberOfHalfEdges())
 }
 
 // Test zipping edges for a mesh with some open and some closed edges
@@ -288,13 +288,13 @@ func TestHEMeshMergeZipEdgesPartial(t *testing.T) {
 	path := "testdata/box.duplicates-partial.obj"
 	mesh, _ := NewHEMeshFromOBJFile(path)
 
-	assert.Equal(t, 22, mesh.GetNumberOfVertices())
+	assert.Equal(t, 22, mesh.NumberOfVertices())
 	assert.False(t, mesh.IsClosed())
 
 	err := mesh.ZipEdges()
 
 	assert.Empty(t, err)
-	assert.Equal(t, 8, mesh.GetNumberOfVertices())
+	assert.Equal(t, 8, mesh.NumberOfVertices())
 	assert.True(t, mesh.IsConsistent())
 	assert.True(t, mesh.IsClosed())
 }

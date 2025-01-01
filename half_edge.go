@@ -25,9 +25,9 @@ type HEMesh struct {
 
 // Construct a half edge mesh from a PolygonSoup
 func NewHEMeshFromPolygonSoup(soup *PolygonSoup) (*HEMesh, error) {
-	nVertices := soup.GetNumberOfVertices()
-	nFaces := soup.GetNumberOfFaces()
-	nPatches := soup.GetNumberOfPatches()
+	nVertices := soup.NumberOfVertices()
+	nFaces := soup.NumberOfFaces()
+	nPatches := soup.NumberOfPatches()
 
 	mesh := HEMesh{
 		vertices:  make([]HEVertex, 0, nVertices),
@@ -40,7 +40,7 @@ func NewHEMeshFromPolygonSoup(soup *PolygonSoup) (*HEMesh, error) {
 	// faces are indexed.
 	for pi := 0; pi < nPatches; pi++ {
 		patch := HEPatch{
-			Name: soup.GetPatch(pi),
+			Name: soup.Patch(pi),
 		}
 		mesh.patches = append(mesh.patches, patch)
 	}
@@ -51,7 +51,7 @@ func NewHEMeshFromPolygonSoup(soup *PolygonSoup) (*HEMesh, error) {
 
 	for vi := 0; vi < nVertices; vi++ {
 		vertex := HEVertex{
-			Origin: soup.GetVertex(vi),
+			Origin: soup.Vertex(vi),
 		}
 		mesh.vertices = append(mesh.vertices, vertex)
 	}
@@ -59,13 +59,13 @@ func NewHEMeshFromPolygonSoup(soup *PolygonSoup) (*HEMesh, error) {
 	// Index the faces and all edges of each face as half edges. Each half
 	// edge will not have a reference to its twin until later.
 	for fi := 0; fi < nFaces; fi++ {
-		faceVertices := soup.GetFace(fi)
+		faceVertices := soup.Face(fi)
 		nFaceVertices := len(faceVertices)
 		nHalfEdges := len(mesh.halfEdges)
 
 		face := HEFace{
 			HalfEdge: nHalfEdges,
-			Patch:    soup.GetFacePatch(fi),
+			Patch:    soup.FacePatch(fi),
 		}
 		mesh.faces = append(mesh.faces, face)
 
@@ -142,7 +142,7 @@ func NewHEMeshFromOBJFile(path string) (*HEMesh, error) {
 }
 
 // Compute the axis-aligned bounding box
-func (m *HEMesh) GetBounds() AABB {
+func (m *HEMesh) Bounds() AABB {
 	minBound := Vector3{1, 1, 1}.MulScalar(math.Inf(1))
 	maxBound := Vector3{1, 1, 1}.MulScalar(math.Inf(-1))
 
@@ -179,7 +179,7 @@ func (m *HEMesh) IsClosed() bool {
 func (m *HEMesh) IsConsistent() bool {
 	for _, halfEdge := range m.halfEdges {
 		if !halfEdge.IsBoundary() {
-			twin := m.GetHalfEdge(halfEdge.Twin)
+			twin := m.HalfEdge(halfEdge.Twin)
 
 			if twin.Origin == halfEdge.Origin {
 				return false
@@ -191,36 +191,36 @@ func (m *HEMesh) IsConsistent() bool {
 }
 
 // Get the number of vertices
-func (m *HEMesh) GetNumberOfVertices() int {
+func (m *HEMesh) NumberOfVertices() int {
 	return len(m.vertices)
 }
 
 // Get the vertex by ID
-func (m *HEMesh) GetVertex(id int) HEVertex {
+func (m *HEMesh) Vertex(id int) HEVertex {
 	return m.vertices[id]
 }
 
 // Get the neighboring vertices for a vertex by ID
-func (m *HEMesh) GetVertexNeighbors(id int) []int {
+func (m *HEMesh) VertexNeighbors(id int) []int {
 	neighbors := make([]int, 0)
-	vertex := m.GetVertex(id)
+	vertex := m.Vertex(id)
 	current := vertex.HalfEdge
 
 	for {
-		halfEdge := m.GetHalfEdge(current)
+		halfEdge := m.HalfEdge(current)
 
 		if halfEdge.IsBoundary() {
 			panic("vertex neighbors requires a closed mesh")
 		}
 
 		if halfEdge.Origin == id {
-			neighbor := m.GetHalfEdge(halfEdge.Next).Origin
+			neighbor := m.HalfEdge(halfEdge.Next).Origin
 			neighbors = append(neighbors, neighbor)
 		} else {
 			neighbors = append(neighbors, halfEdge.Origin)
 		}
 
-		twin := m.GetHalfEdge(halfEdge.Twin)
+		twin := m.HalfEdge(halfEdge.Twin)
 
 		if twin.Origin != id {
 			current = twin.Next
@@ -237,20 +237,20 @@ func (m *HEMesh) GetVertexNeighbors(id int) []int {
 }
 
 // Get the faces using the vertex by ID
-func (m *HEMesh) GetVertexFaces(id int) []int {
+func (m *HEMesh) VertexFaces(id int) []int {
 	faces := make([]int, 0)
-	vertex := m.GetVertex(id)
+	vertex := m.Vertex(id)
 	current := vertex.HalfEdge
 
 	for {
-		halfEdge := m.GetHalfEdge(current)
+		halfEdge := m.HalfEdge(current)
 
 		if halfEdge.IsBoundary() {
 			panic("vertex faces requires a closed mesh")
 		}
 
 		faces = append(faces, halfEdge.Face)
-		twin := m.GetHalfEdge(halfEdge.Twin)
+		twin := m.HalfEdge(halfEdge.Twin)
 
 		if twin.Origin != id {
 			current = twin.Next
@@ -268,21 +268,21 @@ func (m *HEMesh) GetVertexFaces(id int) []int {
 
 // Get the Gaussian curvature at the vertex by ID. This assumes the mesh
 // is composed of strictly triangular elements and is oriented.
-func (m *HEMesh) GetVertexCurvature(id int) (float64, error) {
+func (m *HEMesh) VertexCurvature(id int) (float64, error) {
 	var angle, area float64
 	angle = 2 * math.Pi
 
-	vertex := m.GetVertex(id)
+	vertex := m.Vertex(id)
 	current := vertex.HalfEdge
 
 	for {
-		halfEdge := m.GetHalfEdge(current)
-		nextHalfEdge := m.GetHalfEdge(halfEdge.Next)
-		prevHalfEdge := m.GetHalfEdge(halfEdge.Prev)
+		halfEdge := m.HalfEdge(current)
+		nextHalfEdge := m.HalfEdge(halfEdge.Next)
+		prevHalfEdge := m.HalfEdge(halfEdge.Prev)
 
-		p := m.GetVertex(prevHalfEdge.Origin).Origin
-		q := m.GetVertex(halfEdge.Origin).Origin
-		r := m.GetVertex(nextHalfEdge.Origin).Origin
+		p := m.Vertex(prevHalfEdge.Origin).Origin
+		q := m.Vertex(halfEdge.Origin).Origin
+		r := m.Vertex(nextHalfEdge.Origin).Origin
 
 		u := p.Sub(q)
 		v := r.Sub(q)
@@ -294,7 +294,7 @@ func (m *HEMesh) GetVertexCurvature(id int) (float64, error) {
 			return math.NaN(), ErrOpenMesh
 		}
 
-		twin := m.GetHalfEdge(halfEdge.Twin)
+		twin := m.HalfEdge(halfEdge.Twin)
 		current = twin.Next
 
 		if current == vertex.HalfEdge {
@@ -308,17 +308,17 @@ func (m *HEMesh) GetVertexCurvature(id int) (float64, error) {
 // Get if the vertex is on a boundary. This assumes the mesh is consistently
 // oriented. For inconsistent meshes, this may yield incorrect results.
 func (m *HEMesh) IsVertexOnBoundary(id int) bool {
-	vertex := m.GetVertex(id)
+	vertex := m.Vertex(id)
 	current := vertex.HalfEdge
 
 	for {
-		halfEdge := m.GetHalfEdge(current)
+		halfEdge := m.HalfEdge(current)
 
 		if halfEdge.IsBoundary() {
 			return true
 		}
 
-		current = m.GetHalfEdge(halfEdge.Twin).Next
+		current = m.HalfEdge(halfEdge.Twin).Next
 
 		if current == vertex.HalfEdge {
 			break
@@ -329,37 +329,37 @@ func (m *HEMesh) IsVertexOnBoundary(id int) bool {
 }
 
 // Get the number of faces
-func (m *HEMesh) GetNumberOfFaces() int {
+func (m *HEMesh) NumberOfFaces() int {
 	return len(m.faces)
 }
 
 // Get the face by ID
-func (m *HEMesh) GetFace(id int) HEFace {
+func (m *HEMesh) Face(id int) HEFace {
 	return m.faces[id]
 }
 
 // Get the vertices defining the face by ID
-func (m *HEMesh) GetFaceVertices(id int) []int {
-	faceHalfEdges := m.GetFaceHalfEdges(id)
+func (m *HEMesh) FaceVertices(id int) []int {
+	faceHalfEdges := m.FaceHalfEdges(id)
 	vertices := make([]int, len(faceHalfEdges))
 
 	for i, faceHalfEdge := range faceHalfEdges {
-		vertices[i] = m.GetHalfEdge(faceHalfEdge).Origin
+		vertices[i] = m.HalfEdge(faceHalfEdge).Origin
 	}
 
 	return vertices
 }
 
 // Get the neighboring faces for a face by ID
-func (m *HEMesh) GetFaceNeighbors(id int) []int {
-	faceHalfEdges := m.GetFaceHalfEdges(id)
+func (m *HEMesh) FaceNeighbors(id int) []int {
+	faceHalfEdges := m.FaceHalfEdges(id)
 	neighbors := make([]int, 0, len(faceHalfEdges))
 
 	for _, faceHalfEdge := range faceHalfEdges {
-		halfEdge := m.GetHalfEdge(faceHalfEdge)
+		halfEdge := m.HalfEdge(faceHalfEdge)
 
 		if !halfEdge.IsBoundary() {
-			twin := m.GetHalfEdge(halfEdge.Twin)
+			twin := m.HalfEdge(halfEdge.Twin)
 			neighbors = append(neighbors, twin.Face)
 		}
 	}
@@ -368,15 +368,15 @@ func (m *HEMesh) GetFaceNeighbors(id int) []int {
 }
 
 // Get the half edges of the face by ID
-func (m *HEMesh) GetFaceHalfEdges(id int) []int {
+func (m *HEMesh) FaceHalfEdges(id int) []int {
 	halfEdges := make([]int, 0)
 
-	face := m.GetFace(id)
+	face := m.Face(id)
 	current := face.HalfEdge
 
 	for {
 		halfEdges = append(halfEdges, current)
-		current = m.GetHalfEdge(current).Next
+		current = m.HalfEdge(current).Next
 
 		if current == face.HalfEdge {
 			break
@@ -387,13 +387,13 @@ func (m *HEMesh) GetFaceHalfEdges(id int) []int {
 }
 
 // Get the unit normal vector of the face by ID
-func (m *HEMesh) GetFaceNormal(id int) Vector3 {
+func (m *HEMesh) FaceNormal(id int) Vector3 {
 	normal := Vector3{0, 0, 0}
-	vertices := m.GetFaceVertices(id)
+	vertices := m.FaceVertices(id)
 
 	for i := 0; i < len(vertices); i++ {
-		p := m.GetVertex(vertices[i]).Origin
-		q := m.GetVertex(vertices[(i+1)%len(vertices)]).Origin
+		p := m.Vertex(vertices[i]).Origin
+		q := m.Vertex(vertices[(i+1)%len(vertices)]).Origin
 		normal = normal.Add(p.Cross(q))
 	}
 
@@ -401,28 +401,28 @@ func (m *HEMesh) GetFaceNormal(id int) Vector3 {
 }
 
 // Get the number of half edges
-func (m *HEMesh) GetNumberOfHalfEdges() int {
+func (m *HEMesh) NumberOfHalfEdges() int {
 	return len(m.halfEdges)
 }
 
 // Get the half edge by ID
-func (m *HEMesh) GetHalfEdge(id int) HEHalfEdge {
+func (m *HEMesh) HalfEdge(id int) HEHalfEdge {
 	return m.halfEdges[id]
 }
 
 // Get the number of patches
-func (m *HEMesh) GetNumberOfPatches() int {
+func (m *HEMesh) NumberOfPatches() int {
 	return len(m.patches)
 }
 
 // Get the patch by ID
-func (m *HEMesh) GetPatch(id int) HEPatch {
+func (m *HEMesh) Patch(id int) HEPatch {
 	return m.patches[id]
 }
 
 // Get the list of patch names
-func (m *HEMesh) GetPatchNames() []string {
-	names := make([]string, m.GetNumberOfPatches())
+func (m *HEMesh) PatchNames() []string {
+	names := make([]string, m.NumberOfPatches())
 
 	for i, patch := range m.patches {
 		names[i] = patch.Name
@@ -432,7 +432,7 @@ func (m *HEMesh) GetPatchNames() []string {
 }
 
 // Get the faces assigned to the patch by ID
-func (m *HEMesh) GetPatchFaces(id int) []int {
+func (m *HEMesh) PatchFaces(id int) []int {
 	faces := make([]int, 0)
 
 	for i, face := range m.faces {
@@ -446,9 +446,9 @@ func (m *HEMesh) GetPatchFaces(id int) []int {
 
 // Get the distinct components (connected faces). Each component is
 // defined by the indices of the faces.
-func (m *HEMesh) GetComponents() [][]int {
+func (m *HEMesh) Components() [][]int {
 	components := make([][]int, 0)
-	visited := make([]bool, m.GetNumberOfFaces())
+	visited := make([]bool, m.NumberOfFaces())
 
 	for next, isVisited := range visited {
 		if !isVisited {
@@ -463,7 +463,7 @@ func (m *HEMesh) GetComponents() [][]int {
 					visited[current] = true
 					component = append(component, current)
 
-					for _, neighbor := range m.GetFaceNeighbors(current) {
+					for _, neighbor := range m.FaceNeighbors(current) {
 						if !visited[neighbor] {
 							queue = append(queue, neighbor)
 						}
@@ -478,18 +478,18 @@ func (m *HEMesh) GetComponents() [][]int {
 	return components
 }
 
-// Get the shared vertices between two faces.
-func (m *HEMesh) GetSharedVertices(i, j int) []Vector3 {
+// the shared vertices between two faces.
+func (m *HEMesh) SharedVertices(i, j int) []Vector3 {
 	index := make(map[int]struct{})
 	vertices := make([]Vector3, 0)
 
-	for _, vertex := range m.GetFaceVertices(i) {
+	for _, vertex := range m.FaceVertices(i) {
 		index[vertex] = struct{}{}
 	}
 
-	for _, vertex := range m.GetFaceVertices(j) {
+	for _, vertex := range m.FaceVertices(j) {
 		if _, ok := index[vertex]; ok {
-			origin := m.GetVertex(vertex).Origin
+			origin := m.Vertex(vertex).Origin
 			vertices = append(vertices, origin)
 		}
 	}
@@ -500,9 +500,9 @@ func (m *HEMesh) GetSharedVertices(i, j int) []Vector3 {
 // Naively copy another half edge mesh into the current. This does not
 // merge any duplicate vertices or faces.
 func (m *HEMesh) Merge(other *HEMesh) {
-	offsetVertices := m.GetNumberOfVertices()
-	offsetFaces := m.GetNumberOfFaces()
-	offsetHalfEdges := m.GetNumberOfHalfEdges()
+	offsetVertices := m.NumberOfVertices()
+	offsetFaces := m.NumberOfFaces()
+	offsetHalfEdges := m.NumberOfHalfEdges()
 
 	m.vertices = append(m.vertices, other.vertices...)
 	m.faces = append(m.faces, other.faces...)
@@ -536,9 +536,9 @@ func (m *HEMesh) Merge(other *HEMesh) {
 // the same normal vector orientaton. This does not guarantee that all
 // components will have the same orientation.
 func (m *HEMesh) Orient() {
-	oriented := make([]bool, m.GetNumberOfFaces())
+	oriented := make([]bool, m.NumberOfFaces())
 
-	for _, component := range m.GetComponents() {
+	for _, component := range m.Components() {
 		queue := []int{component[0]}
 
 		for len(queue) > 0 {
@@ -548,7 +548,7 @@ func (m *HEMesh) Orient() {
 			if !oriented[current] {
 				oriented[current] = true
 
-				for _, neighbor := range m.GetFaceNeighbors(current) {
+				for _, neighbor := range m.FaceNeighbors(current) {
 					if !oriented[neighbor] {
 						queue = append(queue, neighbor)
 
@@ -567,15 +567,15 @@ func (m *HEMesh) Orient() {
 func (m *HEMesh) isFaceConsistent(i, j int) bool {
 	index := make(map[int]bool)
 
-	for _, faceHalfEdge := range m.GetFaceHalfEdges(i) {
+	for _, faceHalfEdge := range m.FaceHalfEdges(i) {
 		index[faceHalfEdge] = true
 	}
 
-	for _, faceHalfEdge := range m.GetFaceHalfEdges(j) {
-		halfEdge := m.GetHalfEdge(faceHalfEdge)
+	for _, faceHalfEdge := range m.FaceHalfEdges(j) {
+		halfEdge := m.HalfEdge(faceHalfEdge)
 
 		if _, ok := index[halfEdge.Twin]; ok {
-			twin := m.GetHalfEdge(halfEdge.Twin)
+			twin := m.HalfEdge(halfEdge.Twin)
 			return halfEdge.Origin != twin.Origin
 		}
 	}
@@ -585,14 +585,14 @@ func (m *HEMesh) isFaceConsistent(i, j int) bool {
 
 // Flip the orientation of the face by reversing the half edges
 func (m *HEMesh) flipFace(id int) {
-	faceHalfEdges := m.GetFaceHalfEdges(id)
+	faceHalfEdges := m.FaceHalfEdges(id)
 	halfEdges := make([]HEHalfEdge, len(faceHalfEdges))
 
 	for i, faceHalfEdge := range faceHalfEdges {
-		halfEdge := m.GetHalfEdge(faceHalfEdge)
+		halfEdge := m.HalfEdge(faceHalfEdge)
 		prev := halfEdge.Prev
 		next := halfEdge.Next
-		origin := m.GetHalfEdge(prev).Origin
+		origin := m.HalfEdge(prev).Origin
 
 		halfEdge.Next = prev
 		halfEdge.Prev = next
@@ -613,12 +613,12 @@ func (m *HEMesh) ExtractFaces(ids []int) (*HEMesh, error) {
 	indexPatches := make(map[int]int)
 
 	for _, originalFace := range ids {
-		face := m.GetFace(originalFace)
-		faceVertices := m.GetFaceVertices(originalFace)
+		face := m.Face(originalFace)
+		faceVertices := m.FaceVertices(originalFace)
 
 		for i, originalVertex := range faceVertices {
 			if _, ok := indexVertices[originalVertex]; !ok {
-				vertex := m.GetVertex(originalVertex)
+				vertex := m.Vertex(originalVertex)
 				soup.InsertVertex(vertex.Origin)
 				indexVertices[originalVertex] = len(indexVertices)
 			}
@@ -628,7 +628,7 @@ func (m *HEMesh) ExtractFaces(ids []int) (*HEMesh, error) {
 
 		if face.Patch >= 0 {
 			if _, ok := indexPatches[face.Patch]; !ok {
-				patch := m.GetPatch(face.Patch)
+				patch := m.Patch(face.Patch)
 				soup.InsertPatch(patch.Name)
 				indexPatches[face.Patch] = len(indexPatches)
 			}
@@ -681,7 +681,7 @@ func (m *HEMesh) ExtractPatchNames(names []string) (*HEMesh, error) {
 // Zip open edges by merging vertices within the geometric tolerance and
 // are on edges without a twin.
 func (m *HEMesh) ZipEdges() error {
-	bounds := m.GetBounds().Buffer(GeometricTolerance)
+	bounds := m.Bounds().Buffer(GeometricTolerance)
 	octree := NewOctree(bounds)
 
 	if !m.IsConsistent() {
@@ -701,7 +701,7 @@ func (m *HEMesh) ZipEdges() error {
 				index := slices.Min(duplicates)
 				vertexLookup[i] = indexLookup[index]
 			} else {
-				indexLookup[octree.GetNumberOfItems()] = i
+				indexLookup[octree.NumberOfItems()] = i
 				vertexLookup[i] = len(vertices)
 				vertices = append(vertices, vertex)
 				octree.Insert(vertex.Origin)
@@ -760,17 +760,17 @@ func (m *HEMesh) ZipEdges() error {
 
 // Export the mesh to OBJ
 func (m *HEMesh) ExportOBJ(w io.Writer) error {
-	vertices := make([]Vector3, m.GetNumberOfVertices())
-	faces := make([][]int, m.GetNumberOfFaces())
-	faceGroups := make([]int, m.GetNumberOfFaces())
-	groups := make([]string, m.GetNumberOfPatches())
+	vertices := make([]Vector3, m.NumberOfVertices())
+	faces := make([][]int, m.NumberOfFaces())
+	faceGroups := make([]int, m.NumberOfFaces())
+	groups := make([]string, m.NumberOfPatches())
 
 	for i, vertex := range m.vertices {
 		vertices[i] = vertex.Origin
 	}
 
 	for i, face := range m.faces {
-		faces[i] = m.GetFaceVertices(i)
+		faces[i] = m.FaceVertices(i)
 		faceGroups[i] = face.Patch
 	}
 
