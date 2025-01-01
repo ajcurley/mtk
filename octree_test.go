@@ -35,7 +35,7 @@ func TestOctreeInsert(t *testing.T) {
 		octree.Insert(point)
 	}
 
-	assert.Equal(t, count, octree.GetNumberOfItems())
+	assert.Equal(t, count, octree.NumberOfItems())
 	assert.Equal(t, 9, len(octree.nodes))
 }
 
@@ -54,7 +54,7 @@ func TestOctreeQueryAABB(t *testing.T) {
 		octree.Insert(point)
 	}
 
-	assert.Equal(t, count, octree.GetNumberOfItems())
+	assert.Equal(t, count, octree.NumberOfItems())
 
 	query := NewAABB(Vector3{0.2, 0.2, 0.2}, Vector3{0.05, 0.05, 0.05})
 	results := octree.Query(query)
@@ -77,7 +77,7 @@ func TestOctreeQueryManyAABB(t *testing.T) {
 		octree.Insert(point)
 	}
 
-	assert.Equal(t, count, octree.GetNumberOfItems())
+	assert.Equal(t, count, octree.NumberOfItems())
 
 	queries := []IntersectsAABB{
 		NewAABB(Vector3{0.2, 0.2, 0.2}, Vector3{0.05, 0.05, 0.05}),

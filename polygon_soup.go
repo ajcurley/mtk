@@ -19,29 +19,29 @@ func NewPolygonSoup() *PolygonSoup {
 }
 
 // Get the number of vertices
-func (m *PolygonSoup) GetNumberOfVertices() int {
+func (m *PolygonSoup) NumberOfVertices() int {
 	return len(m.vertices)
 }
 
 // Get a vertex by ID
-func (m *PolygonSoup) GetVertex(id int) Vector3 {
+func (m *PolygonSoup) Vertex(id int) Vector3 {
 	return m.vertices[id]
 }
 
 // Insert a vertex
 func (m *PolygonSoup) InsertVertex(vertex Vector3) int {
 	m.vertices = append(m.vertices, vertex)
-	return m.GetNumberOfVertices() - 1
+	return m.NumberOfVertices() - 1
 }
 
 // Get the number of faces
-func (m *PolygonSoup) GetNumberOfFaces() int {
+func (m *PolygonSoup) NumberOfFaces() int {
 	return len(m.faceOffsets)
 }
 
 // Get a face's ordered set of vertices by face ID
-func (m *PolygonSoup) GetFace(id int) []int {
-	nFaces := m.GetNumberOfFaces()
+func (m *PolygonSoup) Face(id int) []int {
+	nFaces := m.NumberOfFaces()
 	offset := m.faceOffsets[id]
 
 	if id < nFaces-1 {
@@ -53,7 +53,7 @@ func (m *PolygonSoup) GetFace(id int) []int {
 }
 
 // Get a face's patch by face ID
-func (m *PolygonSoup) GetFacePatch(id int) int {
+func (m *PolygonSoup) FacePatch(id int) int {
 	return m.facePatches[id]
 }
 
@@ -62,7 +62,7 @@ func (m *PolygonSoup) InsertFace(vertices []int) int {
 	m.faceOffsets = append(m.faceOffsets, len(m.faceVertices))
 	m.faceVertices = append(m.faceVertices, vertices...)
 	m.facePatches = append(m.facePatches, -1)
-	return m.GetNumberOfFaces() - 1
+	return m.NumberOfFaces() - 1
 }
 
 // Insert a face with a patch
@@ -73,17 +73,17 @@ func (m *PolygonSoup) InsertFaceWithPatch(vertices []int, patch int) int {
 }
 
 // Get the number of patches
-func (m *PolygonSoup) GetNumberOfPatches() int {
+func (m *PolygonSoup) NumberOfPatches() int {
 	return len(m.patches)
 }
 
 // Get a patch by ID
-func (m *PolygonSoup) GetPatch(id int) string {
+func (m *PolygonSoup) Patch(id int) string {
 	return m.patches[id]
 }
 
 // Insert a patch
 func (m *PolygonSoup) InsertPatch(name string) int {
 	m.patches = append(m.patches, name)
-	return m.GetNumberOfPatches() - 1
+	return m.NumberOfPatches() - 1
 }

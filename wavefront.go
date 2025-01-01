@@ -161,7 +161,7 @@ func (r *OBJReader) parseFace(data []byte) error {
 		face[i] = value - 1
 	}
 
-	patch := r.polygonSoup.GetNumberOfPatches() - 1
+	patch := r.polygonSoup.NumberOfPatches() - 1
 	r.polygonSoup.InsertFaceWithPatch(face, patch)
 
 	return nil

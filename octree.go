@@ -25,12 +25,12 @@ func NewOctree(bounds AABB) *Octree {
 }
 
 // Get the number of indexed items
-func (o *Octree) GetNumberOfItems() int {
+func (o *Octree) NumberOfItems() int {
 	return len(o.items)
 }
 
 // Get an item by ID
-func (o *Octree) GetItem(id int) IntersectsAABB {
+func (o *Octree) Item(id int) IntersectsAABB {
 	return o.items[id]
 }
 
