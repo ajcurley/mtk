@@ -546,7 +546,7 @@ func (m *HEMesh) Merge(other *HEMesh) {
 	m.vertices = append(m.vertices, other.vertices...)
 	m.faces = append(m.faces, other.faces...)
 	m.halfEdges = append(m.halfEdges, other.halfEdges...)
-	m.patches = m.patches[:len(indexPatches)]
+	m.patches = make([]HEPatch, len(indexPatches))
 
 	for patchName, i := range indexPatches {
 		m.patches[i] = HEPatch{Name: patchName}
