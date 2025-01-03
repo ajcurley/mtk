@@ -14,12 +14,12 @@ package main
 import (
   "fmt"
 
-  "github.com/ajcurley/mtk"
+  "github.com/ajcurley/mtk/surface"
 )
 
 func main() {
   path := "/some/path/to/model.obj" // also supports .obj.gz
-  mesh, err := mtk.NewHEMeshFromOBJFile(path)
+  mesh, err := surface.NewHEMeshFromOBJFile(path)
 
   if err != nil {
     panic(err)
@@ -103,11 +103,11 @@ func main() {
 
 **Example: Find all points within a radius**
 ```go
-func findPointsInside(octree *mtk.Octree, loc Vector3) []Vector3 {
+func findPointsInside(octree *spatial.Octree, loc geometry.Vector3) []geometry.Vector3 {
   // Given an octree indexing many Vector3 items, search for all points within
   // 1e-3 distance of the a query location.
-  query := NewSphere(loc, 1e-3)
-  items := make([]Vector3)
+  query := geometry.NewSphere(loc, 1e-3)
+  items := make([]geometry.Vector3)
 
   for i, index := range octree.Query(query) {
     // Cast the item to the appropriate type
