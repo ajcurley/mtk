@@ -1,4 +1,4 @@
-package mtk
+package mesh
 
 import (
 	"bufio"
@@ -11,6 +11,8 @@ import (
 	"strconv"
 	"unicode"
 	"unicode/utf8"
+
+	"github.com/ajcurley/mtk/geometry"
 )
 
 const (
@@ -129,7 +131,7 @@ func (r *OBJReader) parseVertex(data []byte) error {
 		values[i] = value
 	}
 
-	vertex := Vector3(values)
+	vertex := geometry.Vector3(values)
 	r.polygonSoup.InsertVertex(vertex)
 
 	return nil
@@ -175,7 +177,7 @@ func (r *OBJReader) parseGroup(data []byte) {
 
 // Write an OBJ file to an io.Writer interface
 type OBJWriter struct {
-	vertices   []Vector3
+	vertices   []geometry.Vector3
 	faces      [][]int
 	faceGroups []int
 	lines      [][]int
@@ -184,7 +186,7 @@ type OBJWriter struct {
 
 func NewOBJWriter() *OBJWriter {
 	return &OBJWriter{
-		vertices:   make([]Vector3, 0),
+		vertices:   make([]geometry.Vector3, 0),
 		faces:      make([][]int, 0),
 		faceGroups: make([]int, 0),
 		lines:      make([][]int, 0),
@@ -193,7 +195,7 @@ func NewOBJWriter() *OBJWriter {
 }
 
 // Set the vertices to write
-func (w *OBJWriter) SetVertices(vertices []Vector3) {
+func (w *OBJWriter) SetVertices(vertices []geometry.Vector3) {
 	w.vertices = vertices
 }
 

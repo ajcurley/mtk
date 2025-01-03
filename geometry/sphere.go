@@ -1,4 +1,4 @@
-package mtk
+package geometry
 
 // Three-dimensional Cartesian sphere
 type Sphere struct {

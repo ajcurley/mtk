@@ -1,7 +1,11 @@
-package mtk
+package mesh
+
+import (
+	"github.com/ajcurley/mtk/geometry"
+)
 
 type PolygonSoup struct {
-	vertices     []Vector3
+	vertices     []geometry.Vector3
 	faceOffsets  []int
 	faceVertices []int
 	facePatches  []int
@@ -10,7 +14,7 @@ type PolygonSoup struct {
 
 func NewPolygonSoup() *PolygonSoup {
 	return &PolygonSoup{
-		vertices:     make([]Vector3, 0),
+		vertices:     make([]geometry.Vector3, 0),
 		faceOffsets:  make([]int, 0),
 		faceVertices: make([]int, 0),
 		facePatches:  make([]int, 0),
@@ -24,12 +28,12 @@ func (m *PolygonSoup) NumberOfVertices() int {
 }
 
 // Get a vertex by ID
-func (m *PolygonSoup) Vertex(id int) Vector3 {
+func (m *PolygonSoup) Vertex(id int) geometry.Vector3 {
 	return m.vertices[id]
 }
 
 // Insert a vertex
-func (m *PolygonSoup) InsertVertex(vertex Vector3) int {
+func (m *PolygonSoup) InsertVertex(vertex geometry.Vector3) int {
 	m.vertices = append(m.vertices, vertex)
 	return m.NumberOfVertices() - 1
 }

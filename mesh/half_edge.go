@@ -1,4 +1,4 @@
-package mtk
+package mesh
 
 import (
 	"compress/gzip"
@@ -9,6 +9,9 @@ import (
 	"os"
 	"slices"
 	"strings"
+
+	"github.com/ajcurley/mtk/geometry"
+	"github.com/ajcurley/mtk/spatial"
 )
 
 var (
@@ -142,9 +145,9 @@ func NewHEMeshFromOBJFile(path string) (*HEMesh, error) {
 }
 
 // Compute the axis-aligned bounding box
-func (m *HEMesh) Bounds() AABB {
-	minBound := Vector3{1, 1, 1}.MulScalar(math.Inf(1))
-	maxBound := Vector3{1, 1, 1}.MulScalar(math.Inf(-1))
+func (m *HEMesh) Bounds() geometry.AABB {
+	minBound := geometry.Vector3{1, 1, 1}.MulScalar(math.Inf(1))
+	maxBound := geometry.Vector3{1, 1, 1}.MulScalar(math.Inf(-1))
 
 	for _, vertex := range m.vertices {
 		for i := 0; i < 3; i++ {
@@ -161,7 +164,7 @@ func (m *HEMesh) Bounds() AABB {
 	center := maxBound.Add(minBound).MulScalar(0.5)
 	halfSize := maxBound.Sub(minBound).MulScalar(0.5)
 
-	return NewAABB(center, halfSize)
+	return geometry.NewAABB(center, halfSize)
 }
 
 // Check if the half edge mesh is closed (no open boundaries)
@@ -387,8 +390,8 @@ func (m *HEMesh) FaceHalfEdges(id int) []int {
 }
 
 // Get the unit normal vector of the face by ID
-func (m *HEMesh) FaceNormal(id int) Vector3 {
-	normal := Vector3{0, 0, 0}
+func (m *HEMesh) FaceNormal(id int) geometry.Vector3 {
+	normal := geometry.Vector3{0, 0, 0}
 	vertices := m.FaceVertices(id)
 
 	for i := 0; i < len(vertices); i++ {
@@ -479,9 +482,9 @@ func (m *HEMesh) Components() [][]int {
 }
 
 // Get the shared vertices between two faces.
-func (m *HEMesh) SharedVertices(i, j int) []Vector3 {
+func (m *HEMesh) SharedVertices(i, j int) []geometry.Vector3 {
 	index := make(map[int]struct{})
-	vertices := make([]Vector3, 0)
+	vertices := make([]geometry.Vector3, 0)
 
 	for _, vertex := range m.FaceVertices(i) {
 		index[vertex] = struct{}{}
@@ -731,8 +734,8 @@ func (m *HEMesh) ExtractPatchNames(names []string) (*HEMesh, error) {
 // Zip open edges by merging vertices within the geometric tolerance and
 // are on edges without a twin.
 func (m *HEMesh) ZipEdges() error {
-	bounds := m.Bounds().Buffer(GeometricTolerance)
-	octree := NewOctree(bounds)
+	bounds := m.Bounds().Buffer(geometry.GeometricTolerance)
+	octree := spatial.NewOctree(bounds)
 
 	if !m.IsConsistent() {
 		m.Orient()
@@ -744,7 +747,7 @@ func (m *HEMesh) ZipEdges() error {
 
 	for i, vertex := range m.vertices {
 		if m.IsVertexOnBoundary(i) {
-			query := NewSphere(vertex.Origin, GeometricTolerance)
+			query := geometry.NewSphere(vertex.Origin, geometry.GeometricTolerance)
 			duplicates := octree.Query(query)
 
 			if len(duplicates) > 0 {
@@ -810,7 +813,7 @@ func (m *HEMesh) ZipEdges() error {
 
 // Export the mesh to OBJ
 func (m *HEMesh) ExportOBJ(w io.Writer) error {
-	vertices := make([]Vector3, m.NumberOfVertices())
+	vertices := make([]geometry.Vector3, m.NumberOfVertices())
 	faces := make([][]int, m.NumberOfFaces())
 	faceGroups := make([]int, m.NumberOfFaces())
 	groups := make([]string, m.NumberOfPatches())
@@ -860,7 +863,7 @@ func (m *HEMesh) ExportOBJFile(path string) error {
 
 // Half edge mesh vertex
 type HEVertex struct {
-	Origin   Vector3
+	Origin   geometry.Vector3
 	HalfEdge int
 }
 

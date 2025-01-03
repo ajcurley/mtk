@@ -1,4 +1,4 @@
-package mtk
+package geometry
 
 const (
 	GeometricTolerance float64 = 1e-8
