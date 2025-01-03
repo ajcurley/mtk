@@ -350,3 +350,16 @@ func TestHEMeshFeatureEdges(t *testing.T) {
 
 	assert.Equal(t, 12, len(featureEdges))
 }
+
+// Test computing the principal axes
+func TestHEMeshPrincipalAxes(t *testing.T) {
+	path := "../testdata/box.obj"
+	mesh, _ := NewHEMeshFromOBJFile(path)
+
+	axes := mesh.PrincipalAxes()
+
+	assert.Equal(t, len(axes), 3)
+	assert.Equal(t, geometry.NewVector3(1, 0, 0), axes[0])
+	assert.Equal(t, geometry.NewVector3(0, 1, 0), axes[1])
+	assert.Equal(t, geometry.NewVector3(0, 0, 1), axes[2])
+}

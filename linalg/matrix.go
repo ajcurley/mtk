@@ -299,7 +299,7 @@ func (m *Matrix) QR() (*Matrix, *Matrix) {
 // Compute the orthogonal axes in descending order of their eigenvalue
 // magnitude using principal component analysis (PCA).
 func (m *Matrix) PCA() []Vector {
-	axes := make([]Vector, m.shape[0])
+	axes := make([]Vector, m.shape[1])
 	_, eigenValues := m.Covariance().SymmetricEigen()
 
 	for i := 0; i < len(axes); i++ {

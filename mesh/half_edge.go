@@ -11,6 +11,7 @@ import (
 	"strings"
 
 	"github.com/ajcurley/mtk/geometry"
+	"github.com/ajcurley/mtk/linalg"
 	"github.com/ajcurley/mtk/spatial"
 )
 
@@ -809,6 +810,26 @@ func (m *HEMesh) ZipEdges() error {
 	}
 
 	return nil
+}
+
+// Compute the principal axes of the mesh using principal component analysis. The
+// resulting axes are orthogonal and sorted by their eigenvalue mangitudes in
+// descending order.
+func (m *HEMesh) PrincipalAxes() []geometry.Vector3 {
+	result := make([]geometry.Vector3, 3)
+	matrix := linalg.NewMatrix(m.NumberOfVertices(), 3)
+
+	for i, vertex := range m.vertices {
+		matrix.SetValue(i, 0, vertex.Origin.X())
+		matrix.SetValue(i, 1, vertex.Origin.Y())
+		matrix.SetValue(i, 2, vertex.Origin.Z())
+	}
+
+	for i, axis := range matrix.PCA() {
+		result[i] = geometry.NewVector3(axis[0], axis[1], axis[2])
+	}
+
+	return result
 }
 
 // Export the mesh to OBJ
