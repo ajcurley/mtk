@@ -1,4 +1,4 @@
-package mtk
+package geometry
 
 // Three dimension Cartesian ray
 type Ray struct {

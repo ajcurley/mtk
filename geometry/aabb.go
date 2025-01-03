@@ -1,4 +1,4 @@
-package mtk
+package geometry
 
 // Three dimensional Cartesian axis-aligned bounding box
 type AABB struct {

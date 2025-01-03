@@ -1,4 +1,4 @@
-package mtk
+package mesh
 
 import (
 	"bytes"
@@ -6,11 +6,13 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+
+	"github.com/ajcurley/mtk/geometry"
 )
 
 // Read an OBJ file from path.
 func TestOBJReaderReadFile(t *testing.T) {
-	path := "testdata/box.obj"
+	path := "../testdata/box.obj"
 
 	objReader := NewOBJReader()
 	soup, err := objReader.ReadFile(path)
@@ -23,7 +25,7 @@ func TestOBJReaderReadFile(t *testing.T) {
 
 // Read an OBJ file from path (gzip).
 func TestOBJReaderReadFileGZIP(t *testing.T) {
-	path := "testdata/box.obj.gz"
+	path := "../testdata/box.obj.gz"
 
 	objReader := NewOBJReader()
 	soup, err := objReader.ReadFile(path)
@@ -36,7 +38,7 @@ func TestOBJReaderReadFileGZIP(t *testing.T) {
 
 // Read an OBJ file from path with mixed elements and patches.
 func TestOBJReaderReadFileGroups(t *testing.T) {
-	path := "testdata/box.groups.obj"
+	path := "../testdata/box.groups.obj"
 
 	objReader := NewOBJReader()
 	soup, err := objReader.ReadFile(path)
@@ -49,11 +51,11 @@ func TestOBJReaderReadFileGroups(t *testing.T) {
 
 // Write an OBJ file.
 func TestOBJWriterWrite(t *testing.T) {
-	vertices := []Vector3{
-		Vector3{0, 0, 0},
-		Vector3{0, 1, 0},
-		Vector3{1, 1, 0},
-		Vector3{1, 1, 1},
+	vertices := []geometry.Vector3{
+		geometry.Vector3{0, 0, 0},
+		geometry.Vector3{0, 1, 0},
+		geometry.Vector3{1, 1, 0},
+		geometry.Vector3{1, 1, 1},
 	}
 
 	faces := [][]int{
@@ -102,10 +104,10 @@ func TestOBJWriterWrite(t *testing.T) {
 
 // Write an OBJ file (gzip).
 func TestOBJWriterWriteGZIP(t *testing.T) {
-	vertices := []Vector3{
-		Vector3{0, 0, 0},
-		Vector3{0, 1, 0},
-		Vector3{1, 1, 0},
+	vertices := []geometry.Vector3{
+		geometry.Vector3{0, 0, 0},
+		geometry.Vector3{0, 1, 0},
+		geometry.Vector3{1, 1, 0},
 	}
 
 	faces := [][]int{

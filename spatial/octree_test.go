@@ -1,14 +1,16 @@
-package mtk
+package spatial
 
 import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+
+	"github.com/ajcurley/mtk/geometry"
 )
 
 // Test splitting an octree node
 func TestOctreeSplit(t *testing.T) {
-	bounds := NewAABB(Vector3{1, 1, 1}, Vector3{1, 1, 1})
+	bounds := geometry.NewAABB(geometry.Vector3{1, 1, 1}, geometry.Vector3{1, 1, 1})
 	octree := NewOctree(bounds)
 
 	assert.Equal(t, 1, len(octree.nodes))
@@ -22,12 +24,12 @@ func TestOctreeSplit(t *testing.T) {
 
 // Test inserting items into an octree
 func TestOctreeInsert(t *testing.T) {
-	bounds := NewAABB(Vector3{0.5, 0.5, 0.5}, Vector3{0.5, 0.5, 0.5})
+	bounds := geometry.NewAABB(geometry.Vector3{0.5, 0.5, 0.5}, geometry.Vector3{0.5, 0.5, 0.5})
 	octree := NewOctree(bounds)
 	count := OctreeMaxItemsPerNode + 1
 
 	for i := 0; i < count; i++ {
-		point := Vector3{
+		point := geometry.Vector3{
 			float64(i) / float64(count),
 			float64(i) / float64(count),
 			float64(i) / float64(count),
@@ -41,12 +43,12 @@ func TestOctreeInsert(t *testing.T) {
 
 // Test querying an octree with an AABB
 func TestOctreeQueryAABB(t *testing.T) {
-	bounds := NewAABB(Vector3{0.5, 0.5, 0.5}, Vector3{0.5, 0.5, 0.5})
+	bounds := geometry.NewAABB(geometry.Vector3{0.5, 0.5, 0.5}, geometry.Vector3{0.5, 0.5, 0.5})
 	octree := NewOctree(bounds)
 	count := OctreeMaxItemsPerNode * 2
 
 	for i := 0; i < count; i++ {
-		point := Vector3{
+		point := geometry.Vector3{
 			float64(i) / float64(count),
 			float64(i) / float64(count),
 			float64(i) / float64(count),
@@ -56,7 +58,7 @@ func TestOctreeQueryAABB(t *testing.T) {
 
 	assert.Equal(t, count, octree.NumberOfItems())
 
-	query := NewAABB(Vector3{0.2, 0.2, 0.2}, Vector3{0.05, 0.05, 0.05})
+	query := geometry.NewAABB(geometry.Vector3{0.2, 0.2, 0.2}, geometry.Vector3{0.05, 0.05, 0.05})
 	results := octree.Query(query)
 
 	assert.Equal(t, count/10, len(results)) // because of floating point math
@@ -64,12 +66,12 @@ func TestOctreeQueryAABB(t *testing.T) {
 
 // Test querying an octree with multiple AABB in parallel
 func TestOctreeQueryManyAABB(t *testing.T) {
-	bounds := NewAABB(Vector3{0.5, 0.5, 0.5}, Vector3{0.5, 0.5, 0.5})
+	bounds := geometry.NewAABB(geometry.Vector3{0.5, 0.5, 0.5}, geometry.Vector3{0.5, 0.5, 0.5})
 	octree := NewOctree(bounds)
 	count := OctreeMaxItemsPerNode * 2
 
 	for i := 0; i < count; i++ {
-		point := Vector3{
+		point := geometry.Vector3{
 			float64(i) / float64(count),
 			float64(i) / float64(count),
 			float64(i) / float64(count),
@@ -79,10 +81,10 @@ func TestOctreeQueryManyAABB(t *testing.T) {
 
 	assert.Equal(t, count, octree.NumberOfItems())
 
-	queries := []IntersectsAABB{
-		NewAABB(Vector3{0.2, 0.2, 0.2}, Vector3{0.05, 0.05, 0.05}),
-		NewAABB(Vector3{0.275, 0.275, 0.275}, Vector3{0.025, 0.025, 0.025}),
-		NewAABB(Vector3{0.3, 0.3, 0.3}, Vector3{0.05, 0.05, 0.05}),
+	queries := []geometry.IntersectsAABB{
+		geometry.NewAABB(geometry.Vector3{0.2, 0.2, 0.2}, geometry.Vector3{0.05, 0.05, 0.05}),
+		geometry.NewAABB(geometry.Vector3{0.275, 0.275, 0.275}, geometry.Vector3{0.025, 0.025, 0.025}),
+		geometry.NewAABB(geometry.Vector3{0.3, 0.3, 0.3}, geometry.Vector3{0.05, 0.05, 0.05}),
 	}
 
 	results := octree.QueryMany(queries)

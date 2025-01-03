@@ -1,8 +1,10 @@
-package mtk
+package spatial
 
 import (
 	"runtime"
 	"sync"
+
+	"github.com/ajcurley/mtk/geometry"
 )
 
 const (
@@ -13,14 +15,14 @@ const (
 // Linear octree implementation
 type Octree struct {
 	nodes map[uint64]*octreeNode
-	items []IntersectsAABB
+	items []geometry.IntersectsAABB
 }
 
 // Construct an Octree indexing items
-func NewOctree(bounds AABB) *Octree {
+func NewOctree(bounds geometry.AABB) *Octree {
 	return &Octree{
 		nodes: map[uint64]*octreeNode{1: newOctreeNode(1, bounds)},
-		items: make([]IntersectsAABB, 0),
+		items: make([]geometry.IntersectsAABB, 0),
 	}
 }
 
@@ -30,12 +32,12 @@ func (o *Octree) NumberOfItems() int {
 }
 
 // Get an item by ID
-func (o *Octree) Item(id int) IntersectsAABB {
+func (o *Octree) Item(id int) geometry.IntersectsAABB {
 	return o.items[id]
 }
 
 // Insert an item into the octree
-func (o *Octree) Insert(item IntersectsAABB) (int, bool) {
+func (o *Octree) Insert(item geometry.IntersectsAABB) (int, bool) {
 	var code uint64
 	index := len(o.items)
 	queue := []uint64{1}
@@ -93,7 +95,7 @@ func (o *Octree) Split(code uint64) {
 }
 
 // Query the octree for intersecting items
-func (o *Octree) Query(query IntersectsAABB) []int {
+func (o *Octree) Query(query geometry.IntersectsAABB) []int {
 	var code uint64
 	items := make(map[int]struct{})
 	queue := []uint64{1}
@@ -109,44 +111,44 @@ func (o *Octree) Query(query IntersectsAABB) []int {
 						var intersects bool
 
 						switch value := query.(type) {
-						case AABB:
-							if item, ok := o.items[index].(IntersectsAABB); ok {
+						case geometry.AABB:
+							if item, ok := o.items[index].(geometry.IntersectsAABB); ok {
 								intersects = item.IntersectsAABB(value)
 							}
-						case *AABB:
-							if item, ok := o.items[index].(IntersectsAABB); ok {
+						case *geometry.AABB:
+							if item, ok := o.items[index].(geometry.IntersectsAABB); ok {
 								intersects = item.IntersectsAABB(*value)
 							}
-						case Ray:
-							if item, ok := o.items[index].(IntersectsRay); ok {
+						case geometry.Ray:
+							if item, ok := o.items[index].(geometry.IntersectsRay); ok {
 								intersects = item.IntersectsRay(value)
 							}
-						case *Ray:
-							if item, ok := o.items[index].(IntersectsRay); ok {
+						case *geometry.Ray:
+							if item, ok := o.items[index].(geometry.IntersectsRay); ok {
 								intersects = item.IntersectsRay(*value)
 							}
-						case Sphere:
-							if item, ok := o.items[index].(IntersectsSphere); ok {
+						case geometry.Sphere:
+							if item, ok := o.items[index].(geometry.IntersectsSphere); ok {
 								intersects = item.IntersectsSphere(value)
 							}
-						case *Sphere:
-							if item, ok := o.items[index].(IntersectsSphere); ok {
+						case *geometry.Sphere:
+							if item, ok := o.items[index].(geometry.IntersectsSphere); ok {
 								intersects = item.IntersectsSphere(*value)
 							}
-						case Triangle:
-							if item, ok := o.items[index].(IntersectsTriangle); ok {
+						case geometry.Triangle:
+							if item, ok := o.items[index].(geometry.IntersectsTriangle); ok {
 								intersects = item.IntersectsTriangle(value)
 							}
-						case *Triangle:
-							if item, ok := o.items[index].(IntersectsTriangle); ok {
+						case *geometry.Triangle:
+							if item, ok := o.items[index].(geometry.IntersectsTriangle); ok {
 								intersects = item.IntersectsTriangle(*value)
 							}
-						case Vector3:
-							if item, ok := o.items[index].(IntersectsVector3); ok {
+						case geometry.Vector3:
+							if item, ok := o.items[index].(geometry.IntersectsVector3); ok {
 								intersects = item.IntersectsVector3(value)
 							}
-						case *Vector3:
-							if item, ok := o.items[index].(IntersectsVector3); ok {
+						case *geometry.Vector3:
+							if item, ok := o.items[index].(geometry.IntersectsVector3); ok {
 								intersects = item.IntersectsVector3(*value)
 							}
 						}
@@ -174,7 +176,7 @@ func (o *Octree) Query(query IntersectsAABB) []int {
 
 // Query the octree for many intersecting items in parallel using the available
 // number of processors.
-func (o *Octree) QueryMany(queries []IntersectsAABB) [][]int {
+func (o *Octree) QueryMany(queries []geometry.IntersectsAABB) [][]int {
 	var wg sync.WaitGroup
 	queue := make(chan int, len(queries))
 	items := make([][]int, len(queries))
@@ -204,13 +206,13 @@ func (o *Octree) QueryMany(queries []IntersectsAABB) [][]int {
 // Node within an Octree
 type octreeNode struct {
 	code   uint64
-	bounds AABB
+	bounds geometry.AABB
 	isLeaf bool
 	items  []int
 }
 
 // Construct an octree node from an AABB and location code
-func newOctreeNode(code uint64, bounds AABB) *octreeNode {
+func newOctreeNode(code uint64, bounds geometry.AABB) *octreeNode {
 	return &octreeNode{
 		code:   code,
 		bounds: bounds,
