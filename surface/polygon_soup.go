@@ -1,4 +1,4 @@
-package mesh
+package surface
 
 import (
 	"github.com/ajcurley/mtk/geometry"
