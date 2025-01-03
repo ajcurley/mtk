@@ -527,6 +527,18 @@ func (m *HEMesh) FeatureEdges(threshold float64) [][2]int {
 // Naively copy another half edge mesh into the current. This does not
 // merge any duplicate vertices or faces.
 func (m *HEMesh) Merge(other *HEMesh) {
+	indexPatches := make(map[string]int)
+
+	for _, patch := range m.patches {
+		indexPatches[patch.Name] = len(indexPatches)
+	}
+
+	for _, patch := range other.patches {
+		if _, ok := indexPatches[patch.Name]; !ok {
+			indexPatches[patch.Name] = len(indexPatches)
+		}
+	}
+
 	offsetVertices := m.NumberOfVertices()
 	offsetFaces := m.NumberOfFaces()
 	offsetHalfEdges := m.NumberOfHalfEdges()
@@ -534,6 +546,11 @@ func (m *HEMesh) Merge(other *HEMesh) {
 	m.vertices = append(m.vertices, other.vertices...)
 	m.faces = append(m.faces, other.faces...)
 	m.halfEdges = append(m.halfEdges, other.halfEdges...)
+	m.patches = make([]HEPatch, len(indexPatches))
+
+	for patchName, i := range indexPatches {
+		m.patches[i] = HEPatch{Name: patchName}
+	}
 
 	for i, vertex := range m.vertices[offsetVertices:] {
 		vertex.HalfEdge += offsetHalfEdges
@@ -542,6 +559,12 @@ func (m *HEMesh) Merge(other *HEMesh) {
 
 	for i, face := range m.faces[offsetFaces:] {
 		face.HalfEdge += offsetHalfEdges
+
+		if face.Patch >= 0 {
+			patchName := other.patches[face.Patch].Name
+			face.Patch = indexPatches[patchName]
+		}
+
 		m.faces[i+offsetFaces] = face
 	}
 

@@ -210,7 +210,7 @@ func TestHEMeshSharedVertices(t *testing.T) {
 }
 
 // Test merging two meshes
-func TestHEMestMerge(t *testing.T) {
+func TestHEMeshMerge(t *testing.T) {
 	path := "testdata/box.obj"
 	mesh, _ := NewHEMeshFromOBJFile(path)
 	other, _ := NewHEMeshFromOBJFile(path)
@@ -222,6 +222,34 @@ func TestHEMestMerge(t *testing.T) {
 	assert.Equal(t, 72, mesh.NumberOfHalfEdges())
 	assert.True(t, mesh.IsClosed())
 	assert.True(t, mesh.IsConsistent())
+}
+
+// Test merging two meshes with unique patch names
+func TestHEMeshMergeUniquePatches(t *testing.T) {
+	boxPath := "testdata/box.groups.obj"
+	mesh, _ := NewHEMeshFromOBJFile(boxPath)
+
+	spherePath := "testdata/sphere.groups.obj"
+	meshSphere, _ := NewHEMeshFromOBJFile(spherePath)
+
+	mesh.Merge(meshSphere)
+
+	assert.Equal(t, 103, mesh.NumberOfFaces())
+	assert.Equal(t, 7, mesh.NumberOfPatches())
+}
+
+// Test merging two meshes with overlapping patch names
+func TestHEMeshMergeSharedPatches(t *testing.T) {
+	path := "testdata/box.groups.obj"
+	mesh, _ := NewHEMeshFromOBJFile(path)
+	other, _ := NewHEMeshFromOBJFile(path)
+
+	mesh.Merge(other)
+
+	assert.Equal(t, 16, mesh.NumberOfVertices())
+	assert.Equal(t, 14, mesh.NumberOfFaces())
+	assert.Equal(t, 52, mesh.NumberOfHalfEdges())
+	assert.Equal(t, 6, mesh.NumberOfPatches())
 }
 
 // Test orienting a consistently oriented mesh
