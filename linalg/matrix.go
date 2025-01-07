@@ -1,18 +1,8 @@
 package linalg
 
 import (
-	"errors"
 	"math"
 	"slices"
-)
-
-var (
-	ErrMatrixDimensions      = errors.New("matrix dimensions must be non-zero")
-	ErrMatrixShapeMismatch   = errors.New("matrix shape mismatch")
-	ErrMatrixRow             = errors.New("matrix row out of range")
-	ErrMatrixColumn          = errors.New("matrix column out of range")
-	ErrMatrixSquareSymmetric = errors.New("matrix must be square and symmetric")
-	ErrMatrixSquare          = errors.New("matrix must be square")
 )
 
 // Two-dimensional matrix
@@ -22,104 +12,97 @@ type Matrix struct {
 }
 
 // Construct a two-dimensional matrix
-func NewMatrix(rows, columns int) *Matrix {
-	if rows <= 0 || columns <= 0 {
-		panic(ErrMatrixDimensions)
+func NewMatrix(rows, cols int, data []float64) *Matrix {
+	if rows <= 0 || cols <= 0 {
+		panic("matrix dimensions must be non-zero")
+	}
+
+	if data == nil {
+		data = make([]float64, rows*cols)
+	}
+
+	if rows*cols != len(data) {
+		panic("matrix dimensions and data size must match")
 	}
 
 	return &Matrix{
-		shape: [2]int{rows, columns},
-		data:  make([]float64, rows*columns),
+		shape: [2]int{rows, cols},
+		data:  data,
 	}
 }
 
 // Construct an identity matrix of size (n, n)
 func NewIdentityMatrix(size int) *Matrix {
-	m := NewMatrix(size, size)
+	m := NewMatrix(size, size, nil)
 
 	for i := 0; i < size; i++ {
-		m.SetValue(i, i, 1.0)
+		m.Set(i, i, 1)
 	}
 
 	return m
 }
 
+// Get the shape
+func (m *Matrix) Shape() (int, int) {
+	return m.shape[0], m.shape[1]
+}
+
+// Get the size
+func (m *Matrix) Size() int {
+	return len(m.data)
+}
+
 // Copy the matrix
 func (m *Matrix) Copy() *Matrix {
-	n := NewMatrix(m.shape[0], m.shape[1])
-
-	for i := 0; i < len(m.data); i++ {
-		n.data[i] = m.data[i]
-	}
-
-	return n
+	rows, cols := m.Shape()
+	data := make([]float64, rows*cols)
+	copy(data, m.data)
+	return NewMatrix(rows, cols, data)
 }
 
-// Validate the (row, column) index
-func (m *Matrix) validateIndex(row, column int) error {
-	if row < 0 || row >= m.shape[0] {
-		return ErrMatrixRow
+// Convert the (i, j) index to the flattened array index
+func (m *Matrix) index(i, j int) int {
+	rows, cols := m.Shape()
+
+	if i < 0 || i >= rows || j < 0 || j > cols {
+		panic("index out of range")
 	}
 
-	if column < 0 || column >= m.shape[1] {
-		return ErrMatrixColumn
-	}
-
-	return nil
-}
-
-// Require validation of the (row, column) index
-func (m *Matrix) mustValidateIndex(row, column int) {
-	if err := m.validateIndex(row, column); err != nil {
-		panic(err)
-	}
-}
-
-// Get the shape (rows, columns)
-func (m *Matrix) Shape() [2]int {
-	return m.shape
+	return i*cols + j
 }
 
 // Get the value at an index
-func (m *Matrix) At(row, column int) float64 {
-	m.mustValidateIndex(row, column)
-	return m.data[(row*m.shape[1])+column]
+func (m *Matrix) At(i, j int) float64 {
+	return m.data[m.index(i, j)]
 }
 
 // Get the row values
-func (m *Matrix) Row(row int) Vector {
-	if row < 0 || row >= m.shape[0] {
-		panic(ErrMatrixRow)
+func (m *Matrix) Row(i int) *Vector {
+	_, cols := m.Shape()
+	data := make([]float64, cols)
+
+	for j := 0; j < cols; j++ {
+		data[j] = m.At(i, j)
 	}
 
-	values := NewVector(m.shape[0])
-
-	for i := 0; i < m.shape[1]; i++ {
-		values[i] = m.At(row, i)
-	}
-
-	return values
+	return NewVector(cols, data)
 }
 
 // Get the column values
-func (m *Matrix) Column(column int) Vector {
-	if column < 0 || column >= m.shape[1] {
-		panic(ErrMatrixColumn)
+func (m *Matrix) Col(i int) *Vector {
+	rows, _ := m.Shape()
+	data := make([]float64, rows)
+
+	for j := 0; j < rows; j++ {
+		data[j] = m.At(j, i)
 	}
 
-	values := NewVector(m.shape[0])
-
-	for i := 0; i < m.shape[0]; i++ {
-		values[i] = m.At(i, column)
-	}
-
-	return values
+	return NewVector(rows, data)
 }
 
-// Set the value at an index
-func (m *Matrix) SetValue(row, column int, value float64) {
-	m.mustValidateIndex(row, column)
-	m.data[(row*m.shape[1])+column] = value
+// Set the value at (i, j)
+func (m *Matrix) Set(i, j int, v float64) {
+	m.data[m.index(i, j)] = v
 }
 
 // Fill the matrix with a value
@@ -131,13 +114,16 @@ func (m *Matrix) Fill(value float64) {
 
 // Check if the matrix is square
 func (m *Matrix) IsSquare() bool {
-	return m.shape[0] == m.shape[1]
+	rows, cols := m.Shape()
+	return rows == cols
 }
 
 // Check if the matrix is symmetric
 func (m *Matrix) IsSymmetric() bool {
-	for i := 0; i < m.shape[0]; i++ {
-		for j := 0; j < m.shape[1]; j++ {
+	rows, cols := m.Shape()
+
+	for i := 0; i < rows; i++ {
+		for j := 0; j < cols; j++ {
 			if m.At(i, j) != m.At(j, i) {
 				return false
 			}
@@ -148,28 +134,30 @@ func (m *Matrix) IsSymmetric() bool {
 }
 
 // Get the trace (diagonal) of the matrix
-func (m *Matrix) Trace() Vector {
+func (m *Matrix) Trace() *Vector {
 	if !m.IsSquare() {
-		panic(ErrMatrixSquare)
+		panic("matrix must be square")
 	}
 
-	trace := NewVector(m.shape[0])
+	rows, _ := m.Shape()
+	data := make([]float64, rows)
 
-	for i := 0; i < trace.Size(); i++ {
-		trace[i] = m.At(i, i)
+	for i := 0; i < rows; i++ {
+		data[i] = m.At(i, i)
 	}
 
-	return trace
+	return NewVector(rows, data)
 }
 
 // Compute the transpose of the matrix
 func (m *Matrix) Transpose() *Matrix {
-	n := NewMatrix(m.shape[1], m.shape[0])
+	rows, cols := m.Shape()
+	n := NewMatrix(rows, cols, nil)
 
-	for i := 0; i < m.shape[0]; i++ {
-		for j := 0; j < m.shape[1]; j++ {
+	for i := 0; i < rows; i++ {
+		for j := 0; j < cols; j++ {
 			v := m.At(j, i)
-			n.SetValue(i, j, v)
+			n.Set(i, j, v)
 		}
 	}
 
@@ -182,10 +170,10 @@ func (m *Matrix) Dot(n *Matrix) *Matrix {
 	nRows, nCols := n.shape[0], n.shape[1]
 
 	if mCols != nRows {
-		panic(ErrMatrixShapeMismatch)
+		panic("matrix inner dimensions must match")
 	}
 
-	d := NewMatrix(mRows, nCols)
+	d := NewMatrix(mRows, nCols, nil)
 
 	for i := 0; i < mRows; i++ {
 		for j := 0; j < nCols; j++ {
@@ -195,7 +183,7 @@ func (m *Matrix) Dot(n *Matrix) *Matrix {
 				value += m.At(i, k) * n.At(k, j)
 			}
 
-			d.SetValue(i, j, value)
+			d.Set(i, j, value)
 		}
 	}
 
@@ -204,18 +192,18 @@ func (m *Matrix) Dot(n *Matrix) *Matrix {
 
 // Compute the covariance matrix
 func (m *Matrix) Covariance() *Matrix {
-	n := m.shape[1]
-	result := NewMatrix(n, n)
+	rows, _ := m.Shape()
+	result := NewMatrix(rows, rows, nil)
 
-	for i := 0; i < n; i++ {
-		x := m.Column(i)
+	for i := 0; i < rows; i++ {
+		x := m.Col(i)
 
-		for j := i; j < n; j++ {
-			y := m.Column(j)
+		for j := i; j < rows; j++ {
+			y := m.Col(j)
 			c := Covariance(x, y)
 
-			result.SetValue(i, j, c)
-			result.SetValue(j, i, c)
+			result.Set(i, j, c)
+			result.Set(j, i, c)
 		}
 	}
 
@@ -225,14 +213,14 @@ func (m *Matrix) Covariance() *Matrix {
 // Compute the eigenvalue and eigenvector pairs for a real, symmetric
 // matrix using the QR iteration. The returned pairs are sorted in descending
 // order of the eigenvalue magnitude.
-func (m *Matrix) SymmetricEigen() (Vector, *Matrix) {
+func (m *Matrix) SymmetricEigen() (*Vector, *Matrix) {
 	if !m.IsSquare() || !m.IsSymmetric() {
-		panic(ErrMatrixSquareSymmetric)
+		panic("matrix must be square and symmetric")
 	}
 
-	s := m.shape[0]
+	rows, _ := m.Shape()
 	a := m.Copy()
-	qq := NewIdentityMatrix(m.shape[0])
+	qq := NewIdentityMatrix(rows)
 
 	for i := 0; i < 100; i++ {
 		q, r := a.QR()
@@ -240,25 +228,25 @@ func (m *Matrix) SymmetricEigen() (Vector, *Matrix) {
 		qq = qq.Dot(q)
 	}
 
-	index := make([]int, s)
+	index := make([]int, rows)
 	trace := a.Trace()
 
-	for i := 0; i < s; i++ {
+	for i := 0; i < rows; i++ {
 		index[i] = i
 	}
 
 	slices.SortStableFunc(index, func(i, j int) int {
-		return -int(math.Abs(trace[i]) - math.Abs(trace[j]))
+		return -int(math.Abs(trace.At(i)) - math.Abs(trace.At(j)))
 	})
 
-	e := NewVector(s)
-	v := NewMatrix(s, s)
+	e := NewVector(rows, nil)
+	v := NewMatrix(rows, rows, nil)
 
 	for j, k := range index {
-		e[j] = a.At(k, k)
+		e.Set(j, a.At(k, k))
 
-		for i := 0; i < s; i++ {
-			v.SetValue(i, j, qq.At(i, k))
+		for i := 0; i < rows; i++ {
+			v.Set(i, j, qq.At(i, k))
 		}
 	}
 
@@ -267,29 +255,28 @@ func (m *Matrix) SymmetricEigen() (Vector, *Matrix) {
 
 // Compute the QR decomposition of the matrix using the Gram-Schmidt process
 func (m *Matrix) QR() (*Matrix, *Matrix) {
-	rows := m.shape[0]
-	cols := m.shape[1]
-
-	q := NewMatrix(rows, cols)
-	r := NewMatrix(cols, cols)
+	rows, cols := m.Shape()
+	q := NewMatrix(rows, cols, nil)
+	r := NewMatrix(cols, cols, nil)
 
 	for j := 0; j < cols; j++ {
-		v := m.Column(j)
+		v := m.Col(j)
 
 		for i := 0; i < j; i++ {
-			rij := q.Column(i).Dot(m.Column(j))
-			r.SetValue(i, j, rij)
+			rij := q.Col(i).Dot(m.Col(j))
+			r.Set(i, j, rij)
 
 			for k := 0; k < v.Size(); k++ {
-				v[k] -= rij * q.At(k, i)
+				vk := v.At(k) - rij*q.At(k, i)
+				v.Set(k, vk)
 			}
 		}
 
 		rjj := v.Magnitude()
-		r.SetValue(j, j, rjj)
+		r.Set(j, j, rjj)
 
 		for k := 0; k < rows; k++ {
-			q.SetValue(k, j, v[k]/rjj)
+			q.Set(k, j, v.At(k)/rjj)
 		}
 	}
 
@@ -298,12 +285,13 @@ func (m *Matrix) QR() (*Matrix, *Matrix) {
 
 // Compute the orthogonal axes in descending order of their eigenvalue
 // magnitude using principal component analysis (PCA).
-func (m *Matrix) PCA() []Vector {
-	axes := make([]Vector, m.shape[1])
+func (m *Matrix) PCA() []*Vector {
+	_, cols := m.Shape()
+	axes := make([]*Vector, cols)
 	_, eigenValues := m.Covariance().SymmetricEigen()
 
-	for i := 0; i < len(axes); i++ {
-		axes[i] = eigenValues.Column(i)
+	for i := 0; i < cols; i++ {
+		axes[i] = eigenValues.Col(i)
 	}
 
 	return axes
