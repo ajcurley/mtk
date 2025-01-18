@@ -16,8 +16,9 @@ import (
 )
 
 var (
-	ErrNonManifoldMesh = errors.New("non-manifold mesh")
-	ErrOpenMesh        = errors.New("mesh must be closed")
+	ErrNonManifoldMesh      = errors.New("non-manifold mesh")
+	ErrOpenMesh             = errors.New("mesh must be closed")
+	ErrTransformationmatrix = errors.New("invalid transformation matrix")
 )
 
 type HEMesh struct {
@@ -202,6 +203,11 @@ func (m *HEMesh) NumberOfVertices() int {
 // Get the vertex by ID
 func (m *HEMesh) Vertex(id int) HEVertex {
 	return m.vertices[id]
+}
+
+// Set the vertex position by ID
+func (m *HEMesh) SetVertexOrigin(id int, origin geometry.Vector3) {
+	m.vertices[id].Origin = origin
 }
 
 // Get the neighboring vertices for a vertex by ID
